@@ -12,6 +12,5 @@ import lombok.NoArgsConstructor;
 public class UserDTO {
 
   private String imageUrl;
-  private String name;
   private String email;
 }

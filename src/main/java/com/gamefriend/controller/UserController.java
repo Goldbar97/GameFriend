@@ -6,6 +6,8 @@ import com.gamefriend.dto.UserDTO;
 import com.gamefriend.response.ApiResponse;
 import com.gamefriend.response.ApiResponseBody;
 import com.gamefriend.service.UserService;
+import com.gamefriend.utils.ClientUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,27 +26,31 @@ public class UserController {
   private final UserService userService;
 
   @PostMapping("/api/users/signup")
-  public ResponseEntity<ApiResponse> signUp(
-      @RequestBody @Validated SignDTO request
-  ) {
+  public ResponseEntity<ApiResponse> signUp(@RequestBody @Validated SignDTO signDTO) {
 
-    userService.signUp(request);
+    userService.signUp(signDTO);
     return ResponseEntity.ok(ApiResponse.ok());
   }
 
   @PostMapping("/api/users/signin")
-  public ResponseEntity<ApiResponseBody<String>> signIn(
-      @RequestBody @Validated SignDTO request
-  ) {
+  public ResponseEntity<ApiResponseBody<String>> signIn(@RequestBody @Validated SignDTO signDTO) {
 
-    String token = userService.signIn(request);
+    String token = userService.signIn(signDTO);
+    return ResponseEntity.ok(ApiResponseBody.okBody(token));
+  }
+
+  @PostMapping("/api/admins/signin")
+  public ResponseEntity<ApiResponseBody<String>> adminSignIn(HttpServletRequest request,
+      @RequestBody @Validated SignDTO signDTO) {
+
+    String ip = ClientUtils.getIP(request);
+    String token = userService.adminSignIn(ip, signDTO);
     return ResponseEntity.ok(ApiResponseBody.okBody(token));
   }
 
   @GetMapping("/api/users/profile")
   public ResponseEntity<ApiResponseBody<UserDTO>> getProfile(
-      @AuthenticationPrincipal UserDetails userDetails
-  ) {
+      @AuthenticationPrincipal UserDetails userDetails) {
 
     UserDTO userDTO = userService.getProfile(userDetails);
     return ResponseEntity.ok(ApiResponseBody.okBody(userDTO));
@@ -53,20 +59,33 @@ public class UserController {
   @PostMapping("/api/users/password")
   public ResponseEntity<ApiResponse> attemptPassword(
       @AuthenticationPrincipal UserDetails userDetails,
-      @RequestBody @Validated PasswordDTO request
-  ) {
+      @RequestBody @Validated PasswordDTO passwordDTO) {
 
-    userService.attemptPassword(userDetails, request);
+    userService.attemptPassword(userDetails, passwordDTO);
     return ResponseEntity.ok(ApiResponse.ok());
   }
 
   @PutMapping("/api/users/profile")
-  public ResponseEntity<ApiResponse> updateProfile(
-      @AuthenticationPrincipal UserDetails userDetails,
-      @RequestBody @Validated UserDTO request
-  ) {
+  public ResponseEntity<ApiResponse> updateProfile(@AuthenticationPrincipal UserDetails userDetails,
+      @RequestBody @Validated UserDTO userDTO) {
 
-    userService.updateProfile(userDetails, request);
+    userService.updateProfile(userDetails, userDTO);
+    return ResponseEntity.ok(ApiResponse.ok());
+  }
+
+  @PutMapping("/api/users/password")
+  public ResponseEntity<ApiResponse> updatePassword(
+      @AuthenticationPrincipal UserDetails userDetails,
+      @RequestBody @Validated PasswordDTO passwordDTO) {
+
+    userService.updatePassword(userDetails, passwordDTO);
+    return ResponseEntity.ok(ApiResponse.ok());
+  }
+
+  @PostMapping("/api/users/find-password")
+  public ResponseEntity<ApiResponse> findPassword(@RequestBody @Validated UserDTO userDTO) {
+
+    userService.findPassword(userDTO);
     return ResponseEntity.ok(ApiResponse.ok());
   }
 }

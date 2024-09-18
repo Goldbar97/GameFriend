@@ -1,8 +1,10 @@
 package com.gamefriend.entity;
 
 import com.gamefriend.dto.UserDTO;
-import jakarta.persistence.Column;
+import com.gamefriend.type.UserRole;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,25 +24,20 @@ public class UserEntity extends BaseEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(nullable = false)
-  private String name;
-
-  @Column(nullable = false)
   private String email;
-
-  @Column(nullable = false)
+  private String imageUrl;
   private String password;
 
-  private String imageUrl;
-
-  public void update(UserDTO request) {
-
-    name = request.getName();
-    imageUrl = request.getImageUrl();
-  }
+  @Enumerated(EnumType.STRING)
+  private UserRole role;
 
   public void updatePassword(String password) {
 
     this.password = password;
+  }
+
+  public void update(UserDTO request) {
+
+    this.imageUrl = request.getImageUrl();
   }
 }

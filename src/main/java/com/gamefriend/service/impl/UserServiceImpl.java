@@ -10,6 +10,8 @@ import com.gamefriend.exception.CustomException;
 import com.gamefriend.exception.ErrorCode;
 import com.gamefriend.repository.UserRepository;
 import com.gamefriend.service.UserService;
+import com.gamefriend.type.UserRole;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,35 +27,54 @@ public class UserServiceImpl implements UserService {
   private final UserRepository userRepository;
 
   @Override
-  public void signUp(SignDTO request) {
+  public void signUp(SignDTO signDTO) {
 
-    if (userRepository.existsByEmail(request.getEmail())) {
+    if (userRepository.existsByEmail(signDTO.getEmail())) {
       throw new CustomException(ErrorCode.EMAIL_EXISTS);
     }
 
     UserEntity userEntity = UserEntity.builder()
-        .name("Undefined")
-        .email(request.getEmail())
-        .password(passwordEncoder.encode(request.getPassword()))
+        .email(signDTO.getEmail())
+        .password(passwordEncoder.encode(signDTO.getPassword()))
+        .role(UserRole.ROLE_USER)
         .build();
 
     userRepository.save(userEntity);
   }
 
   @Override
-  public String signIn(SignDTO request) {
+  public String signIn(SignDTO signDTO) {
 
-    UserEntity userEntity = userRepository.findByEmail(request.getEmail())
+    UserEntity userEntity = userRepository.findByEmail(signDTO.getEmail())
         .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-    final String email = userEntity.getEmail();
+    String email = userEntity.getEmail();
+    UserRole role = userEntity.getRole();
 
-    if (!passwordEncoder.matches(request.getPassword(), userEntity.getPassword())) {
+    if (!passwordEncoder.matches(signDTO.getPassword(), userEntity.getPassword())) {
       redisComponent.signInFailed(email);
       throw new CustomException(ErrorCode.WRONG_PASSWORD);
     }
     redisComponent.signInSuccess(email);
 
-    return jwtProvider.generateToken(email);
+    return jwtProvider.generateToken(email, role);
+  }
+
+  @Override
+  public String adminSignIn(String ip, SignDTO signDTO) {
+
+    Optional<UserEntity> userEntityOptional = userRepository.findByEmail(signDTO.getEmail());
+
+    if (userEntityOptional.isEmpty()) {
+      redisComponent.signInFailed(ip);
+      throw new CustomException(ErrorCode.USER_NOT_FOUND);
+    }
+    redisComponent.signInSuccess(ip);
+
+    UserEntity userEntity = userEntityOptional.get();
+    String email = userEntity.getEmail();
+    UserRole role = userEntity.getRole();
+
+    return jwtProvider.generateToken(email, role);
   }
 
   @Override
@@ -63,46 +84,53 @@ public class UserServiceImpl implements UserService {
         .orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
 
     return UserDTO.builder()
-        .name(userEntity.getName())
         .email(userEntity.getEmail())
         .imageUrl(userEntity.getImageUrl())
         .build();
   }
 
   @Override
-  public void updateProfile(UserDetails userDetails, UserDTO request) {
+  public void updateProfile(UserDetails userDetails, UserDTO userDTO) {
 
     UserEntity userEntity = userRepository.findByEmail(userDetails.getUsername())
         .orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
 
-    userEntity.update(request);
+    userEntity.update(userDTO);
   }
 
   @Override
-  public void attemptPassword(UserDetails userDetails, PasswordDTO request) {
+  public void attemptPassword(UserDetails userDetails, PasswordDTO passwordDTO) {
 
     UserEntity userEntity = userRepository.findByEmail(userDetails.getUsername())
         .orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
+    String email = userEntity.getEmail();
 
-    if (!passwordEncoder.matches(request.getPassword(), userEntity.getPassword())) {
+    if (!passwordEncoder.matches(passwordDTO.getPassword(), userEntity.getPassword())) {
+      redisComponent.signInFailed(email);
       throw new CustomException(ErrorCode.UNAUTHORIZED);
     }
+    redisComponent.signInSuccess(email);
   }
 
   @Override
-  public void updatePassword(UserDetails userDetails, PasswordDTO request) {
+  public void updatePassword(UserDetails userDetails, PasswordDTO passwordDTO) {
 
     UserEntity userEntity = userRepository.findByEmail(userDetails.getUsername())
         .orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
 
-    if (passwordEncoder.matches(request.getPassword(), userEntity.getPassword())) {
+    if (passwordEncoder.matches(passwordDTO.getPassword(), userEntity.getPassword())) {
       throw new CustomException(ErrorCode.USING_SAME_PASSWORD);
     }
 
-    if (!request.getPassword().equals(request.getConfirmPassword())) {
+    if (!passwordDTO.getPassword().equals(passwordDTO.getConfirmPassword())) {
       throw new CustomException(ErrorCode.WRONG_PASSWORD);
     }
 
-    userEntity.updatePassword(passwordEncoder.encode(request.getPassword()));
+    userEntity.updatePassword(passwordEncoder.encode(passwordDTO.getPassword()));
+  }
+
+  @Override
+  public void findPassword(UserDTO userDTO) {
+
   }
 }
