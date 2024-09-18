@@ -22,9 +22,12 @@ public class RedisComponent {
 
   public void signInFailed(String key) {
 
+    if (isLocked(key)) {
+      throw new CustomException(ErrorCode.ACCOUNT_LOCKED);
+    }
     Long value = redisTemplate.opsForValue().increment(SIGN_IN_FAIL_COUNT + key);
 
-    if (value >= maxAttempt) {
+    if (value != null && value >= maxAttempt) {
       lock(key);
       redisTemplate.delete(SIGN_IN_FAIL_COUNT + key);
       throw new CustomException(ErrorCode.ACCOUNT_LOCKED);
