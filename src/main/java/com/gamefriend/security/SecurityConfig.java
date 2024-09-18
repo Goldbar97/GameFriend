@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -31,7 +30,8 @@ public class SecurityConfig {
         .httpBasic(AbstractHttpConfigurer::disable)
         .sessionManagement(e -> e.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(e -> e
-            .requestMatchers("/api/users/signin", "/api/users/signup", "/api/admins/signin").permitAll()
+            .requestMatchers("/api/users/signin", "/api/users/signup", "/api/admins/signin")
+            .permitAll()
             .requestMatchers("/api/users/profile", "/api/users/password").authenticated()
             .anyRequest().authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -3,7 +3,6 @@ package com.gamefriend.service;
 import com.gamefriend.dto.PasswordDTO;
 import com.gamefriend.dto.SignDTO;
 import com.gamefriend.dto.UserDTO;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 
