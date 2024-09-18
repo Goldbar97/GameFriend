@@ -27,20 +27,13 @@ public class SecurityConfig {
 
     http
         .csrf(AbstractHttpConfigurer::disable)
-
         .cors(AbstractHttpConfigurer::disable)
-
         .httpBasic(AbstractHttpConfigurer::disable)
-
-        .sessionManagement(
-            httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer.sessionCreationPolicy(
-                SessionCreationPolicy.STATELESS))
-
-        .authorizeHttpRequests(
-            authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
-                .requestMatchers("api/users/signin", "api/users/signup").permitAll()
-                .anyRequest().authenticated())
-
+        .sessionManagement(e -> e.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(e -> e
+            .requestMatchers("/api/users/signin", "/api/users/signup", "/api/admins/signin").permitAll()
+            .requestMatchers("/api/users/profile", "/api/users/password").authenticated()
+            .anyRequest().authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
