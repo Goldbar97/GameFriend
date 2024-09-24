@@ -34,24 +34,23 @@ public class CategoryController {
   }
 
   @GetMapping("/api/categories")
-  public ResponseEntity<ApiResponseBody<List<String>>> getCategories() {
+  public ResponseEntity<ApiResponseBody<List<CategoryDTO>>> getCategories() {
 
-    List<String> categories = categoryService.getCategories();
+    List<CategoryDTO> categories = categoryService.getCategories();
     return ResponseEntity.ok(ApiResponseBody.okBody(categories));
   }
 
   @PreAuthorize("hasRole('ADMIN')")
-  @PutMapping("/api/categories/{categoryName}")
-  public void updateCategory(@PathVariable String categoryName,
-      @Validated CategoryDTO categoryDTO) {
+  @PutMapping("/api/categories/{categoryId}")
+  public void updateCategory(@PathVariable Long categoryId, @Validated CategoryDTO categoryDTO) {
 
-    categoryService.updateCategory(categoryName, categoryDTO);
+    categoryService.updateCategory(categoryId, categoryDTO);
   }
 
   @PreAuthorize("hasRole('ADMIN')")
-  @DeleteMapping("/api/categories/{categoryName}")
-  public void deleteCategory(@PathVariable String categoryName) {
+  @DeleteMapping("/api/categories/{categoryId}")
+  public void deleteCategory(@PathVariable Long categoryId) {
 
-    categoryService.deleteCategory(categoryName);
+    categoryService.deleteCategory(categoryId);
   }
 }

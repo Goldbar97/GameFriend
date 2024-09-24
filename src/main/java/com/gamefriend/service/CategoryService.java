@@ -10,11 +10,11 @@ public interface CategoryService {
   void createCategory(CategoryDTO categoryDTO);
 
   @Transactional(readOnly = true)
-  List<String> getCategories();
+  List<CategoryDTO> getCategories();
 
   @Transactional
-  void updateCategory(String categoryName, CategoryDTO categoryDTO);
+  void updateCategory(Long categoryId, CategoryDTO categoryDTO);
 
   @Transactional
-  void deleteCategory(String categoryName);
+  void deleteCategory(Long categoryId);
 }

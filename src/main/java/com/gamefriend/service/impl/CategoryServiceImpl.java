@@ -28,28 +28,33 @@ public class CategoryServiceImpl implements CategoryService {
   }
 
   @Override
-  public List<String> getCategories() {
+  public List<CategoryDTO> getCategories() {
 
     List<CategoryEntity> categoryEntities = categoryRepository.findAll();
 
     return categoryEntities.stream()
-        .map(CategoryEntity::getName)
+        .map(e ->
+            CategoryDTO.builder()
+                .id(e.getId())
+                .name(e.getName())
+                .build()
+        )
         .collect(Collectors.toList());
   }
 
   @Override
-  public void updateCategory(String categoryName, CategoryDTO categoryDTO) {
+  public void updateCategory(Long categoryId, CategoryDTO categoryDTO) {
 
-    CategoryEntity categoryEntity = categoryRepository.findByName(categoryName)
+    CategoryEntity categoryEntity = categoryRepository.findById(categoryId)
         .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
     categoryEntity.update(categoryDTO.getName());
   }
 
   @Override
-  public void deleteCategory(String categoryName) {
+  public void deleteCategory(Long categoryId) {
 
-    CategoryEntity categoryEntity = categoryRepository.findByName(categoryName)
+    CategoryEntity categoryEntity = categoryRepository.findById(categoryId)
         .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
     categoryRepository.delete(categoryEntity);
