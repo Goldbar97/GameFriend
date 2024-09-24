@@ -7,6 +7,8 @@ import lombok.Getter;
 @Getter
 public enum ErrorCode {
   ACCOUNT_LOCKED(423, "The account is temporary locked"),
+  BAD_REQUEST(400, "Bad request"),
+  CHATROOM_EXISTS(409, "Your chatroom is already exists"),
   EMAIL_EXISTS(409, "Email is already exists"),
   EXPIRED_TOKEN(401, "Token is expired"),
   INTERNAL_SERVER_ERROR(500, "Internal server error"),
