@@ -57,11 +57,11 @@ public class UserController {
   }
 
   @PostMapping("/api/users/password")
-  public ResponseEntity<ApiResponse> attemptPassword(
+  public ResponseEntity<ApiResponse> verifyPassword(
       @AuthenticationPrincipal UserDetails userDetails,
       @RequestBody @Validated PasswordDTO passwordDTO) {
 
-    userService.attemptPassword(userDetails, passwordDTO);
+    userService.verifyPassword(userDetails, passwordDTO);
     return ResponseEntity.ok(ApiResponse.ok());
   }
 

@@ -99,7 +99,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public void attemptPassword(UserDetails userDetails, PasswordDTO passwordDTO) {
+  public void verifyPassword(UserDetails userDetails, PasswordDTO passwordDTO) {
 
     UserEntity userEntity = userRepository.findByEmail(userDetails.getUsername())
         .orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));

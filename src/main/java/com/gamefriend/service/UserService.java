@@ -24,7 +24,7 @@ public interface UserService {
   void updateProfile(UserDetails userDetails, UserDTO userDTO);
 
   @Transactional
-  void attemptPassword(UserDetails userDetails, PasswordDTO passwordDTO);
+  void verifyPassword(UserDetails userDetails, PasswordDTO passwordDTO);
 
   @Transactional
   void updatePassword(UserDetails userDetails, PasswordDTO passwordDTO);
