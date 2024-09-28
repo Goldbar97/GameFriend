@@ -31,9 +31,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     if (token != null) {
       try {
-        if (!jwtProvider.validateToken(token)) {
-          throw new CustomException(ErrorCode.EXPIRED_TOKEN);
-        } else {
+        if (jwtProvider.validateToken(token)) {
           Authentication authentication = jwtProvider.getAuthentication(token);
           SecurityContextHolder.getContext().setAuthentication(authentication);
         }
