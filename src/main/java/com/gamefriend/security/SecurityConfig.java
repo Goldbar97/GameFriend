@@ -1,13 +1,11 @@
 package com.gamefriend.security;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -30,6 +28,8 @@ public class SecurityConfig {
         .httpBasic(AbstractHttpConfigurer::disable)
         .sessionManagement(e -> e.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(e -> e
+            .requestMatchers("/ws/**")
+            .permitAll()
             .requestMatchers("/api/users/signin", "/api/users/signup", "/api/admins/signin")
             .permitAll()
             .requestMatchers("/api/users/profile", "/api/users/password").authenticated()
@@ -37,11 +37,5 @@ public class SecurityConfig {
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
-  }
-
-  @Bean
-  public WebSecurityCustomizer webSecurityCustomizer() {
-
-    return web -> web.ignoring().requestMatchers(PathRequest.toH2Console());
   }
 }
