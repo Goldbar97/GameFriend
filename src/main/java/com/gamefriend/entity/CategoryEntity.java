@@ -21,6 +21,8 @@ public class CategoryEntity extends BaseEntity {
   private Long id;
 
   private String name;
+  private int rooms;
+  private int participants;
 
   public void update(String name) {
 
