@@ -7,6 +7,8 @@ public interface CategoryService {
 
   void createCategory(CategoryDTO categoryDTO);
 
+  List<CategoryDTO> searchCategories(String query);
+
   List<CategoryDTO> getCategories();
 
   void updateCategory(Long categoryId, CategoryDTO categoryDTO);

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -31,6 +32,14 @@ public class CategoryController {
     categoryService.createCategory(categoryDTO);
 
     return ResponseEntity.ok(ApiResponse.ok());
+  }
+
+  @GetMapping("/api/categories/search")
+  public ResponseEntity<ApiResponseBody<List<CategoryDTO>>> searchCategories(
+      @RequestParam("query") String query) {
+
+    List<CategoryDTO> categories = categoryService.searchCategories(query);
+    return ResponseEntity.ok(ApiResponseBody.okBody(categories));
   }
 
   @GetMapping("/api/categories")
