@@ -81,11 +81,4 @@ public class UserController {
     userService.updatePassword(userDetails, passwordDTO);
     return ResponseEntity.ok(ApiResponse.ok());
   }
-
-  @PostMapping("/api/users/find-password")
-  public ResponseEntity<ApiResponse> findPassword(@RequestBody @Validated UserDTO userDTO) {
-
-    userService.findPassword(userDTO);
-    return ResponseEntity.ok(ApiResponse.ok());
-  }
 }
