@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +19,7 @@ public class CategoryServiceImpl implements CategoryService {
   private final CategoryRepository categoryRepository;
 
   @Override
+  @Transactional
   public void createCategory(CategoryDTO categoryDTO) {
 
     CategoryEntity categoryEntity = CategoryEntity.builder()
@@ -28,6 +30,7 @@ public class CategoryServiceImpl implements CategoryService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<CategoryDTO> getCategories() {
 
     List<CategoryEntity> categoryEntities = categoryRepository.findAll();
@@ -43,6 +46,7 @@ public class CategoryServiceImpl implements CategoryService {
   }
 
   @Override
+  @Transactional
   public void updateCategory(Long categoryId, CategoryDTO categoryDTO) {
 
     CategoryEntity categoryEntity = categoryRepository.findById(categoryId)
@@ -52,6 +56,7 @@ public class CategoryServiceImpl implements CategoryService {
   }
 
   @Override
+  @Transactional
   public void deleteCategory(Long categoryId) {
 
     CategoryEntity categoryEntity = categoryRepository.findById(categoryId)
