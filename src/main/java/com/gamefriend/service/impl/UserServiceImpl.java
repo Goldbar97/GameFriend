@@ -29,12 +29,13 @@ public class UserServiceImpl implements UserService {
   @Override
   public void signUp(SignDTO signDTO) {
 
-    if (userRepository.existsByEmail(signDTO.getEmail())) {
-      throw new CustomException(ErrorCode.EMAIL_EXISTS);
+    if (userRepository.existsByUsername(signDTO.getUsername())) {
+      throw new CustomException(ErrorCode.USERNAME_EXISTS);
     }
 
     UserEntity userEntity = UserEntity.builder()
-        .email(signDTO.getEmail())
+        .username(signDTO.getUsername())
+        .nickname(signDTO.getNickname())
         .password(passwordEncoder.encode(signDTO.getPassword()))
         .role(UserRole.ROLE_USER)
         .build();
@@ -45,24 +46,24 @@ public class UserServiceImpl implements UserService {
   @Override
   public String signIn(SignDTO signDTO) {
 
-    UserEntity userEntity = userRepository.findByEmail(signDTO.getEmail())
+    UserEntity userEntity = userRepository.findByUsername(signDTO.getUsername())
         .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-    String email = userEntity.getEmail();
+    String username = userEntity.getUsername();
     UserRole role = userEntity.getRole();
 
     if (!passwordEncoder.matches(signDTO.getPassword(), userEntity.getPassword())) {
-      redisComponent.signInFailed(email);
+      redisComponent.signInFailed(username);
       throw new CustomException(ErrorCode.WRONG_PASSWORD);
     }
-    redisComponent.signInSuccess(email);
+    redisComponent.signInSuccess(username);
 
-    return jwtProvider.generateToken(email, role);
+    return jwtProvider.generateToken(username, role);
   }
 
   @Override
   public String adminSignIn(String ip, SignDTO signDTO) {
 
-    Optional<UserEntity> userEntityOptional = userRepository.findByEmail(signDTO.getEmail());
+    Optional<UserEntity> userEntityOptional = userRepository.findByUsername(signDTO.getUsername());
 
     if (userEntityOptional.isEmpty()) {
       redisComponent.signInFailed(ip);
@@ -71,20 +72,21 @@ public class UserServiceImpl implements UserService {
     redisComponent.signInSuccess(ip);
 
     UserEntity userEntity = userEntityOptional.get();
-    String email = userEntity.getEmail();
+    String username = userEntity.getUsername();
     UserRole role = userEntity.getRole();
 
-    return jwtProvider.generateToken(email, role);
+    return jwtProvider.generateToken(username, role);
   }
 
   @Override
   public UserDTO getProfile(UserDetails userDetails) {
 
-    UserEntity userEntity = userRepository.findByEmail(userDetails.getUsername())
-        .orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
+    UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
     return UserDTO.builder()
-        .email(userEntity.getEmail())
+        .username(userEntity.getUsername())
+        .nickname(userEntity.getNickname())
         .imageUrl(userEntity.getImageUrl())
         .build();
   }
@@ -92,8 +94,8 @@ public class UserServiceImpl implements UserService {
   @Override
   public void updateProfile(UserDetails userDetails, UserDTO userDTO) {
 
-    UserEntity userEntity = userRepository.findByEmail(userDetails.getUsername())
-        .orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
+    UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
     userEntity.update(userDTO);
   }
@@ -101,22 +103,22 @@ public class UserServiceImpl implements UserService {
   @Override
   public void verifyPassword(UserDetails userDetails, PasswordDTO passwordDTO) {
 
-    UserEntity userEntity = userRepository.findByEmail(userDetails.getUsername())
-        .orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
-    String email = userEntity.getEmail();
+    UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    String username = userEntity.getUsername();
 
     if (!passwordEncoder.matches(passwordDTO.getPassword(), userEntity.getPassword())) {
-      redisComponent.signInFailed(email);
-      throw new CustomException(ErrorCode.UNAUTHORIZED);
+      redisComponent.signInFailed(username);
+      throw new CustomException(ErrorCode.WRONG_PASSWORD);
     }
-    redisComponent.signInSuccess(email);
+    redisComponent.signInSuccess(username);
   }
 
   @Override
   public void updatePassword(UserDetails userDetails, PasswordDTO passwordDTO) {
 
-    UserEntity userEntity = userRepository.findByEmail(userDetails.getUsername())
-        .orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
+    UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
     if (passwordEncoder.matches(passwordDTO.getPassword(), userEntity.getPassword())) {
       throw new CustomException(ErrorCode.USING_SAME_PASSWORD);
@@ -127,10 +129,5 @@ public class UserServiceImpl implements UserService {
     }
 
     userEntity.updatePassword(passwordEncoder.encode(passwordDTO.getPassword()));
-  }
-
-  @Override
-  public void findPassword(UserDTO userDTO) {
-
   }
 }

@@ -25,6 +25,7 @@ public class UserEntity extends BaseEntity {
   private Long id;
 
   private String username;
+  private String nickname;
   private String imageUrl;
   private String password;
 
@@ -36,8 +37,9 @@ public class UserEntity extends BaseEntity {
     this.password = password;
   }
 
-  public void update(UserDTO request) {
+  public void update(UserDTO userDTO) {
 
-    this.imageUrl = request.getImageUrl();
+    this.nickname = userDTO.getNickname();
+    this.imageUrl = userDTO.getImageUrl();
   }
 }
