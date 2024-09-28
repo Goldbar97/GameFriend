@@ -8,6 +8,7 @@ import lombok.Getter;
 public enum ErrorCode {
   ACCOUNT_LOCKED(423, "The account is temporary locked"),
   BAD_REQUEST(400, "Bad request"),
+  CATEGORY_EXISTS(409, "The category is already exists"),
   CHATROOM_EXISTS(409, "Your chatroom is already exists"),
   CHATROOM_FULL(400, "The chatroom is full"),
   EXPIRED_TOKEN(401, "Token is expired"),
