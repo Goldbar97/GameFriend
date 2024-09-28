@@ -3,22 +3,20 @@ package com.gamefriend.service;
 import com.gamefriend.dto.ChatRoomDTO;
 import java.util.List;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.transaction.annotation.Transactional;
 
-public interface ChatRoomService {
+public interface ChatroomService {
 
-  @Transactional
   void createChatRoom(UserDetails userDetails, Long categoryId, ChatRoomDTO chatRoomDTO);
 
-  @Transactional(readOnly = true)
+  void enterChatRoom(UserDetails userDetails, Long chatRoomId);
+
+  void leaveChatRoom(UserDetails userDetails, Long chatRoomId);
+
   ChatRoomDTO getChatRoom(UserDetails userDetails);
 
-  @Transactional(readOnly = true)
   List<ChatRoomDTO> getChatRooms(Long categoryId);
 
-  @Transactional
   void updateChatRoom(UserDetails userDetails, ChatRoomDTO chatRoomDTO);
 
-  @Transactional
   void deleteChatRoom(UserDetails userDetails);
 }
