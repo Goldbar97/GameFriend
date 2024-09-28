@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @Builder
-@Entity(name = "CHAT_ROOM")
+@Entity(name = "CHATROOM")
 @Getter
 @NoArgsConstructor
 public class ChatRoomEntity extends BaseEntity {
@@ -43,5 +43,23 @@ public class ChatRoomEntity extends BaseEntity {
 
     title = chatRoomDTO.getTitle();
     capacity = chatRoomDTO.getCapacity();
+  }
+
+  public void increment() {
+
+    if (present == capacity) {
+      return;
+    }
+
+    present++;
+  }
+
+  public void decrement() {
+
+    if (present == 0) {
+      return;
+    }
+
+    present--;
   }
 }
