@@ -12,12 +12,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ChatRoomRepository extends JpaRepository<ChatRoomEntity, Long> {
 
-  @Query("SELECT c FROM CHAT_ROOM c JOIN FETCH c.userEntity WHERE c.categoryEntity = :categoryEntity")
+  @Query("SELECT c FROM CHATROOM c JOIN FETCH c.userEntity WHERE c.categoryEntity = :categoryEntity")
   List<ChatRoomEntity> findAllByCategoryEntity(CategoryEntity categoryEntity);
 
   Optional<ChatRoomEntity> findByUserEntity(UserEntity userEntity);
-
-  boolean existsByAnonymousId(String anonymousId);
-
-  boolean existsByCreatedBy(String createdBy);
 }
