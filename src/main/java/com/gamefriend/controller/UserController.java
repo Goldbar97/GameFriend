@@ -32,6 +32,13 @@ public class UserController {
     return ResponseEntity.ok(ApiResponse.ok());
   }
 
+  @PostMapping("/api/users/check-duplication")
+  public ResponseEntity<ApiResponse> checkDuplication(@RequestBody @Validated SignDTO signDTO) {
+
+    userService.checkDuplication(signDTO);
+    return ResponseEntity.ok(ApiResponse.ok());
+  }
+
   @PostMapping("/api/users/signin")
   public ResponseEntity<ApiResponseBody<String>> signIn(@RequestBody @Validated SignDTO signDTO) {
 
