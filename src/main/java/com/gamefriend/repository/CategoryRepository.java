@@ -11,6 +11,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> {
 
+  List<CategoryEntity> findTop10ByOrderByParticipantsDesc();
+
   @Query("SELECT COUNT(c) > 0 FROM CATEGORY c WHERE LOWER(REPLACE(c.name, ' ', '')) = LOWER(REPLACE(:name, ' ', ''))")
   boolean existsByName(@Param("name") String name);
 
