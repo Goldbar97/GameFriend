@@ -56,7 +56,7 @@ public class CategoryServiceImpl implements CategoryService {
   @Transactional(readOnly = true)
   public List<CategoryDTO> getCategories() {
 
-    List<CategoryEntity> categoryEntities = categoryRepository.findAll();
+    List<CategoryEntity> categoryEntities = categoryRepository.findTop10ByOrderByParticipantsDesc();
 
     return categoryEntities.stream()
         .map(e ->
