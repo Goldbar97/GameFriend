@@ -28,4 +28,35 @@ public class CategoryEntity extends BaseEntity {
 
     this.name = name;
   }
+
+  public void incrementRooms() {
+
+    rooms++;
+  }
+
+  public void decrementRooms() {
+
+    if (rooms == 0) {
+      return;
+    }
+    rooms--;
+  }
+
+  public void incrementParticipants() {
+    participants++;
+  }
+
+  public void decrementParticipants() {
+    if (participants == 0) {
+      return;
+    }
+    participants--;
+  }
+
+  public void decrementParticipants(int i) {
+    if (participants < i) {
+      return;
+    }
+    participants = participants - i;
+  }
 }

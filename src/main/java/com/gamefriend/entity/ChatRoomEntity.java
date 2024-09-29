@@ -32,8 +32,16 @@ public class ChatRoomEntity extends BaseEntity {
   private CategoryEntity categoryEntity;
 
   private String title;
+  private String createdBy;
   private int capacity;
   private int present;
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof UserEntity user)) return false;
+    return id != null && id.equals(user.getId());
+  }
 
   public void update(ChatRoomDTO chatRoomDTO) {
 
@@ -45,7 +53,7 @@ public class ChatRoomEntity extends BaseEntity {
     capacity = chatRoomDTO.getCapacity();
   }
 
-  public void increment() {
+  public void incrementPresent() {
 
     if (present == capacity) {
       return;
@@ -54,7 +62,7 @@ public class ChatRoomEntity extends BaseEntity {
     present++;
   }
 
-  public void decrement() {
+  public void decrementPresent() {
 
     if (present == 0) {
       return;
