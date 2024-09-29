@@ -35,9 +35,12 @@ public class SecurityConfig {
         .authorizeHttpRequests(e -> e
             .requestMatchers("/ws/**")
             .permitAll()
-            .requestMatchers("/api/users/signin", "/api/users/signup", "/api/admins/signin")
+            .requestMatchers("/api/users/signin", "/api/users/signup", "/api/admins/signin",
+                "/api/users/check-duplication")
             .permitAll()
             .requestMatchers(HttpMethod.GET, "/api/categories", "/api/categories/search/**")
+            .permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/categories/*/chatrooms")
             .permitAll()
             .requestMatchers("/api/users/profile", "/api/users/password")
             .authenticated()
