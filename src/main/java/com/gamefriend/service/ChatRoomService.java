@@ -6,17 +6,18 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 public interface ChatroomService {
 
-  void createChatRoom(UserDetails userDetails, Long categoryId, ChatRoomDTO chatRoomDTO);
+  ChatRoomDTO createChatRoom(UserDetails userDetails, Long categoryId, ChatRoomDTO chatRoomDTO);
 
-  void enterChatRoom(UserDetails userDetails, Long chatRoomId);
+  List<ChatRoomDTO> searchChatrooms(Long categoryId, String query);
 
-  void leaveChatRoom(UserDetails userDetails, Long chatRoomId);
+  void enterChatRoom(UserDetails userDetails, Long categoryId, Long chatRoomId);
+
+  void leaveChatRoom(UserDetails userDetails, Long categoryId, Long chatRoomId);
 
   ChatRoomDTO getChatRoom(UserDetails userDetails);
 
   List<ChatRoomDTO> getChatRooms(Long categoryId);
 
-  void updateChatRoom(UserDetails userDetails, ChatRoomDTO chatRoomDTO);
-
-  void deleteChatRoom(UserDetails userDetails);
+  void updateChatRoom(UserDetails userDetails, Long categoryId, Long chatroomId,
+      ChatRoomDTO chatRoomDTO);
 }
