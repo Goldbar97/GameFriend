@@ -29,9 +29,8 @@ public class UserServiceImpl implements UserService {
   @Override
   public void signUp(SignDTO signDTO) {
 
-    if (userRepository.existsByUsername(signDTO.getUsername())) {
-      throw new CustomException(ErrorCode.USERNAME_EXISTS);
-    }
+    checkDuplication(signDTO);
+    checkPasswordEquality(signDTO);
 
     UserEntity userEntity = UserEntity.builder()
         .username(signDTO.getUsername())
@@ -41,6 +40,21 @@ public class UserServiceImpl implements UserService {
         .build();
 
     userRepository.save(userEntity);
+  }
+
+  @Override
+  public void checkDuplication(SignDTO signDTO) {
+
+    if (userRepository.existsByUsername(signDTO.getUsername())) {
+      throw new CustomException(ErrorCode.USERNAME_EXISTS);
+    }
+  }
+
+  private void checkPasswordEquality(SignDTO signDTO) {
+
+    if (!signDTO.getPassword().equals(signDTO.getPasswordVerify())) {
+      throw new CustomException(ErrorCode.PASSWORD_NOT_EQUAL);
+    }
   }
 
   @Override

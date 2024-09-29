@@ -9,6 +9,8 @@ public interface UserService {
 
   void signUp(SignDTO signDTO);
 
+  void checkDuplication(SignDTO signDTO);
+
   String signIn(SignDTO signDTO);
 
   String adminSignIn(String ip, SignDTO signDTO);
