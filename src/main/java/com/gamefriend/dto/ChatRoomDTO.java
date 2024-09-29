@@ -14,14 +14,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ChatRoomDTO {
 
+  private Long id;
+
   @NotBlank
   private String title;
 
   @Min(value = 1)
   private int capacity;
 
+  private String entranceMessage;
   private String createdBy;
-  private String password;
   private int present;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;

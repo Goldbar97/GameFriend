@@ -12,4 +12,5 @@ public class SignDTO {
   private String username;
   private String nickname;
   private String password;
+  private String passwordVerify;
 }
