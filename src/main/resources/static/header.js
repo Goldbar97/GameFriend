@@ -1,5 +1,9 @@
 function isLoggedIn() {
-  return localStorage.getItem('token') !== null;
+  return sessionStorage.getItem('token') !== null;
+}
+
+function signOut() {
+  sessionStorage.removeItem('token');
 }
 
 function setNavbar() {

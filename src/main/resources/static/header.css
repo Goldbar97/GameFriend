@@ -1,3 +1,7 @@
+.navbar {
+  height: 82px;
+}
+
 .logo-link {
   display: inline-block;
   padding: 0;
@@ -8,4 +12,17 @@
   width: 100px; /* 원하는 이미지의 고정 크기 */
   height: auto; /* 비율을 유지하면서 이미지 크기 조정 */
   display: block;
+}
+
+.profile-image {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center; /* 링크 텍스트와 아이콘을 세로 가운데 정렬 */
 }

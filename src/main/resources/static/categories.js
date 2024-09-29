@@ -8,11 +8,14 @@ function renderCategoryList(categories) {
     const listItem = document.createElement('li');
     listItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
     listItem.innerHTML = `
-      <div>
+      <a href="chatrooms.html?categoryId=${category.id}&categoryName=${category.name}" class="category-link text-decoration-none">
         <h5>${category.name}</h5>
         <small>채팅방 개수: ${category.rooms}, 참여자 수: ${category.participants}명</small>
-      </div>
-      <span class="badge bg-primary rounded-pill">${category.participants}명</span>
+        <div class="badge-container d-flex">
+          <span class="badge bg-secondary rounded-pill me-2">${category.rooms}개</span> <!-- 채팅방 개수 배지 -->
+          <span class="badge bg-primary rounded-pill">${category.participants}명</span> <!-- 참여자 수 배지 -->
+        </div>
+      </a>
     `;
     categoryList.appendChild(listItem);
   });

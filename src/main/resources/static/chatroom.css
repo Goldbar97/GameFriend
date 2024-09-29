@@ -1,0 +1,39 @@
+.chat-container {
+  height: calc(100vh - 56px); /* 네비게이션 높이를 제외한 전체 높이 */
+  display: flex;
+  flex-direction: row;
+}
+/* 채팅 메시지 영역 */
+.chat-messages {
+  flex-grow: 1;
+  padding: 20px;
+  overflow-y: scroll;
+  border-right: 1px solid #ccc;
+  background-color: #f9f9f9;
+}
+/* 메시지 입력 영역 */
+.message-input {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-top: 1px solid #ccc;
+  background-color: white;
+}
+/* 참여자 목록 */
+.participants-list {
+  width: 250px;
+  padding: 20px;
+  background-color: #f0f0f0;
+  border-left: 1px solid #ccc;
+  overflow-y: auto;
+}
+.message {
+  margin-bottom: 10px;
+}
+.message .username {
+  font-weight: bold;
+}
+.message .timestamp {
+  font-size: 0.8em;
+  color: gray;
+}
