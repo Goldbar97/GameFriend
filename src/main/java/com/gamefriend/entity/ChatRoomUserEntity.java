@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @Builder
-@Entity(name = "CHAT_ROOM_USER")
+@Entity(name = "CHATROOM_USER")
 @Getter
 @NoArgsConstructor
 public class ChatRoomUserEntity extends BaseEntity {
