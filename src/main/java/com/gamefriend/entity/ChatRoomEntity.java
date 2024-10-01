@@ -1,6 +1,6 @@
 package com.gamefriend.entity;
 
-import com.gamefriend.dto.ChatRoomDTO;
+import com.gamefriend.dto.ChatroomDTO;
 import com.gamefriend.exception.CustomException;
 import com.gamefriend.exception.ErrorCode;
 import jakarta.persistence.Entity;
@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @Entity(name = "CHATROOM")
 @Getter
 @NoArgsConstructor
-public class ChatRoomEntity extends BaseEntity {
+public class ChatroomEntity extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,6 +32,7 @@ public class ChatRoomEntity extends BaseEntity {
   private CategoryEntity categoryEntity;
 
   private String title;
+  private String entranceMessage;
   private String createdBy;
   private int capacity;
   private int present;
@@ -43,7 +44,7 @@ public class ChatRoomEntity extends BaseEntity {
     return id != null && id.equals(user.getId());
   }
 
-  public void update(ChatRoomDTO chatRoomDTO) {
+  public void update(ChatroomDTO chatRoomDTO) {
 
     if (chatRoomDTO.getCapacity() < present) {
       throw new CustomException(ErrorCode.BAD_REQUEST);

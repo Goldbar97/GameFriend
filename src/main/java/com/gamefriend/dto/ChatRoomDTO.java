@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @Getter
 @NoArgsConstructor
-public class ChatRoomDTO {
+public class ChatroomDTO {
 
   private Long id;
 

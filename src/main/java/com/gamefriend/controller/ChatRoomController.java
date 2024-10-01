@@ -1,6 +1,7 @@
 package com.gamefriend.controller;
 
-import com.gamefriend.dto.ChatRoomDTO;
+import com.gamefriend.dto.ChatroomDTO;
+import com.gamefriend.dto.ChatroomUserDTO;
 import com.gamefriend.response.ApiResponse;
 import com.gamefriend.response.ApiResponseBody;
 import com.gamefriend.service.ChatroomService;
@@ -29,73 +30,99 @@ public class ChatroomController {
   private final ChatroomService chatroomService;
 
   @PostMapping("/api/categories/{categoryId}/chatrooms")
-  public ResponseEntity<ApiResponseBody<ChatRoomDTO>> createChatRoom(
+  public ResponseEntity<ApiResponseBody<ChatroomDTO>> createChatRoom(
       @AuthenticationPrincipal UserDetails userDetails, @PathVariable("categoryId") Long categoryId,
-      @RequestBody @Validated ChatRoomDTO chatRoomDTO) {
+      @RequestBody @Validated ChatroomDTO chatRoomDTO) {
 
-    ChatRoomDTO saved = chatroomService.createChatRoom(userDetails, categoryId, chatRoomDTO);
+    ChatroomDTO saved = chatroomService.createChatRoom(userDetails, categoryId, chatRoomDTO);
     return ResponseEntity.ok(ApiResponseBody.okBody(saved));
   }
 
   @GetMapping("/api/categories/{categoryId}/chatrooms/search")
-  public ResponseEntity<ApiResponseBody<List<ChatRoomDTO>>> searchChatrooms(
+  public ResponseEntity<ApiResponseBody<List<ChatroomDTO>>> searchChatrooms(
       @PathVariable("categoryId") Long categoryId, @RequestParam("query") String query) {
 
-    List<ChatRoomDTO> chatrooms = chatroomService.searchChatrooms(categoryId, query);
+    List<ChatroomDTO> chatrooms = chatroomService.searchChatrooms(categoryId, query);
     return ResponseEntity.ok(ApiResponseBody.okBody(chatrooms));
   }
 
-  @MessageMapping("/app/categories/{categoryId}/chatrooms/{chatRoomId}/enter")
-  @SendTo("/app/categories/{categoryId}/chatrooms/{chatRoomId}")
-  public String enterChatRoom(@AuthenticationPrincipal UserDetails userDetails,
-      @DestinationVariable Long categoryId, @DestinationVariable Long chatRoomId) {
+  @PostMapping("/api/categories/{categoryId}/chatrooms/{chatroomId}/enter")
+  public ResponseEntity<ApiResponse> enterChatroom(@AuthenticationPrincipal UserDetails userDetails,
+      @PathVariable("categoryId") Long categoryId, @PathVariable("chatroomId") Long chatroomId) {
 
-    chatroomService.enterChatRoom(userDetails, categoryId, chatRoomId);
-
-    return userDetails.getUsername() + " has entered the room.";
+    chatroomService.enterChatRoom(userDetails, categoryId, chatroomId);
+    return ResponseEntity.ok(ApiResponse.ok());
   }
 
-  @MessageMapping("/app/categories/{categoryId}/chatrooms/{chatRoomId}/leave")
-  @SendTo("/app/categories/{categoryId}/chatrooms/{chatRoomId}")
-  public String leaveChatRoom(@AuthenticationPrincipal UserDetails userDetails,
-      @DestinationVariable Long categoryId, @DestinationVariable Long chatRoomId) {
+  @DeleteMapping("/api/categories/{categoryId}/chatrooms/{chatroomId}/leave")
+  public ResponseEntity<ApiResponse> leaveChatroom(@AuthenticationPrincipal UserDetails userDetails,
+      @PathVariable("categoryId") Long categoryId, @PathVariable("chatroomId") Long chatroomId) {
 
-    chatroomService.leaveChatRoom(userDetails, categoryId, chatRoomId);
-
-    return userDetails.getUsername() + " has left the room.";
+    chatroomService.leaveChatRoom(userDetails, categoryId, chatroomId);
+    return ResponseEntity.ok(ApiResponse.ok());
   }
 
-  @GetMapping("/api/users/chatroom")
-  public ResponseEntity<ApiResponseBody<ChatRoomDTO>> getChatRoom(
-      @AuthenticationPrincipal UserDetails userDetails) {
+//  @MessageMapping("/app/categories/{categoryId}/chatrooms/{chatroomId}/enter")
+//  @SendTo("/app/categories/{categoryId}/chatrooms/{chatroomId}")
+//  public String enterChatRoom(@AuthenticationPrincipal UserDetails userDetails,
+//      @DestinationVariable Long categoryId, @DestinationVariable Long chatroomId) {
+//
+//    chatroomService.enterChatRoom(userDetails, categoryId, chatroomId);
+//
+//    return userDetails.getUsername() + " has entered the room.";
+//  }
+//
+//  @MessageMapping("/app/categories/{categoryId}/chatrooms/{chatroomId}/leave")
+//  @SendTo("/app/categories/{categoryId}/chatrooms/{chatroomId}")
+//  public String leaveChatRoom(@AuthenticationPrincipal UserDetails userDetails,
+//      @DestinationVariable Long categoryId, @DestinationVariable Long chatroomId) {
+//
+//    chatroomService.leaveChatRoom(userDetails, categoryId, chatroomId);
+//
+//    return userDetails.getUsername() + " has left the room.";
+//  }
 
-    ChatRoomDTO chatRoom = chatroomService.getChatRoom(userDetails);
+  @GetMapping("/api/categories/{categoryId}/chatrooms/{chatroomId}")
+  public ResponseEntity<ApiResponseBody<ChatroomDTO>> getChatroom(
+      @PathVariable("categoryId") Long categoryId, @PathVariable("chatroomId") Long chatroomId) {
+
+    ChatroomDTO chatRoom = chatroomService.getChatRoom(categoryId, chatroomId);
     return ResponseEntity.ok(ApiResponseBody.okBody(chatRoom));
   }
 
   @GetMapping("/api/categories/{categoryId}/chatrooms")
-  public ResponseEntity<ApiResponseBody<List<ChatRoomDTO>>> getChatRooms(
+  public ResponseEntity<ApiResponseBody<List<ChatroomDTO>>> getChatrooms(
       @PathVariable("categoryId") Long categoryId) {
 
-    List<ChatRoomDTO> chatRooms = chatroomService.getChatRooms(categoryId);
+    List<ChatroomDTO> chatRooms = chatroomService.getChatRooms(categoryId);
     return ResponseEntity.ok(ApiResponseBody.okBody(chatRooms));
+  }
+
+  @GetMapping("/api/categories/{categoryId}/chatrooms/{chatroomId}/users")
+  public ResponseEntity<ApiResponseBody<List<ChatroomUserDTO>>> getChatroomUsers(
+      @PathVariable("categoryId") Long categoryId, @PathVariable("chatroomId") Long chatroomId) {
+
+    List<ChatroomUserDTO> chatroomUserDTO = chatroomService.getChatroomUsers(categoryId,
+        chatroomId);
+    return ResponseEntity.ok(ApiResponseBody.okBody(chatroomUserDTO));
   }
 
   @PutMapping("/api/categories/{categoryId}/chatrooms/{chatroomId}")
   public ResponseEntity<ApiResponse> updateChatRoom(
       @AuthenticationPrincipal UserDetails userDetails, @PathVariable("categoryId") Long categoryId,
-      @PathVariable("chatroomId") Long chatroomId, @RequestBody @Validated ChatRoomDTO chatRoomDTO) {
+      @PathVariable("chatroomId") Long chatroomId,
+      @RequestBody @Validated ChatroomDTO chatRoomDTO) {
 
     chatroomService.updateChatRoom(userDetails, categoryId, chatroomId, chatRoomDTO);
     return ResponseEntity.ok(ApiResponse.ok());
   }
 
-  @DeleteMapping("/api/categories/{categoryId}/chatrooms/{chatRoomId}")
+  @DeleteMapping("/api/categories/{categoryId}/chatrooms/{chatroomId}")
   public ResponseEntity<ApiResponse> deleteChatRoom(
       @AuthenticationPrincipal UserDetails userDetails, @PathVariable("categoryId") Long categoryId,
-      @PathVariable("chatRoomId") Long chatRoomId) {
+      @PathVariable("chatroomId") Long chatroomId) {
 
-    chatroomService.leaveChatRoom(userDetails, categoryId, chatRoomId);
+    chatroomService.leaveChatRoom(userDetails, categoryId, chatroomId);
     return ResponseEntity.ok(ApiResponse.ok());
   }
 }

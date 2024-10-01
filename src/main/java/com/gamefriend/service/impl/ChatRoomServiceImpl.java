@@ -1,15 +1,16 @@
 package com.gamefriend.service.impl;
 
-import com.gamefriend.dto.ChatRoomDTO;
+import com.gamefriend.dto.ChatroomDTO;
+import com.gamefriend.dto.ChatroomUserDTO;
 import com.gamefriend.entity.CategoryEntity;
-import com.gamefriend.entity.ChatRoomEntity;
-import com.gamefriend.entity.ChatRoomUserEntity;
+import com.gamefriend.entity.ChatroomEntity;
+import com.gamefriend.entity.ChatroomUserEntity;
 import com.gamefriend.entity.UserEntity;
 import com.gamefriend.exception.CustomException;
 import com.gamefriend.exception.ErrorCode;
 import com.gamefriend.repository.CategoryRepository;
-import com.gamefriend.repository.ChatRoomRepository;
-import com.gamefriend.repository.ChatRoomUserRepository;
+import com.gamefriend.repository.ChatroomRepository;
+import com.gamefriend.repository.ChatroomUserRepository;
 import com.gamefriend.repository.UserRepository;
 import com.gamefriend.service.ChatroomService;
 import java.util.List;
@@ -25,39 +26,46 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChatroomServiceImpl implements ChatroomService {
 
   private final CategoryRepository categoryRepository;
-  private final ChatRoomUserRepository chatRoomUserRepository;
-  private final ChatRoomRepository chatRoomRepository;
+  private final ChatroomUserRepository chatRoomUserRepository;
+  private final ChatroomRepository chatRoomRepository;
   private final UserRepository userRepository;
 
   @Override
   @Transactional
-  public ChatRoomDTO createChatRoom(UserDetails userDetails, Long categoryId, ChatRoomDTO chatRoomDTO) {
+  public ChatroomDTO createChatRoom(UserDetails userDetails, Long categoryId,
+      ChatroomDTO chatRoomDTO) {
 
     UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
         .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
+    if (chatRoomRepository.existsByUserEntity(userEntity)) {
+      throw new CustomException(ErrorCode.CHATROOM_EXISTS);
+    }
+
     CategoryEntity categoryEntity = categoryRepository.findById(categoryId)
         .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-    ChatRoomEntity chatRoomEntity = ChatRoomEntity.builder()
+    ChatroomEntity chatRoomEntity = ChatroomEntity.builder()
         .userEntity(userEntity)
         .categoryEntity(categoryEntity)
-        .createdBy(userEntity.getNickname())
         .title(chatRoomDTO.getTitle())
+        .entranceMessage(chatRoomDTO.getEntranceMessage())
+        .createdBy(userEntity.getNickname())
         .capacity(chatRoomDTO.getCapacity())
         .present(0)
         .build();
 
-    ChatRoomEntity saved = chatRoomRepository.save(chatRoomEntity);
+    ChatroomEntity saved = chatRoomRepository.save(chatRoomEntity);
     categoryEntity.incrementRooms();
 
     // TODO: enter own chatroom
     enterChatRoom(userDetails, categoryId, saved.getId());
 
-    return ChatRoomDTO.builder()
+    return ChatroomDTO.builder()
         .id(saved.getId())
         .title(saved.getTitle())
         .capacity(saved.getCapacity())
+        .entranceMessage(saved.getEntranceMessage())
         .createdBy(saved.getCreatedBy())
         .present(saved.getPresent())
         .createdAt(saved.getCreatedAt())
@@ -66,14 +74,59 @@ public class ChatroomServiceImpl implements ChatroomService {
   }
 
   @Override
-  public List<ChatRoomDTO> searchChatrooms(Long categoryId, String query) {
+  @Transactional(readOnly = true)
+  public ChatroomDTO getChatRoom(Long categoryId, Long chatroomId) {
 
-    List<ChatRoomEntity> chatRoomEntities = chatRoomRepository.findByCategoryIdAndQuery(categoryId, query);
+    ChatroomEntity chatRoomEntity = chatRoomRepository.findByIdAndCategoryId(chatroomId, categoryId)
+        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+    return ChatroomDTO.builder()
+        .id(chatRoomEntity.getId())
+        .title(chatRoomEntity.getTitle())
+        .capacity(chatRoomEntity.getCapacity())
+        .entranceMessage(chatRoomEntity.getEntranceMessage())
+        .createdBy(chatRoomEntity.getCreatedBy())
+        .present(chatRoomEntity.getPresent())
+        .createdAt(chatRoomEntity.getCreatedAt())
+        .updatedAt(chatRoomEntity.getUpdatedAt())
+        .build();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<ChatroomDTO> getChatRooms(Long categoryId) {
+
+    CategoryEntity categoryEntity = categoryRepository.findById(categoryId)
+        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+    List<ChatroomEntity> chatRoomEntities = chatRoomRepository.findAllByCategoryEntity(
+        categoryEntity);
 
     return chatRoomEntities.stream()
-        .map(e -> ChatRoomDTO.builder()
+        .map(e ->
+            ChatroomDTO.builder()
+                .id(e.getId())
+                .title(e.getTitle())
+                .capacity(e.getCapacity())
+                .createdBy(e.getCreatedBy())
+                .present(e.getPresent())
+                .createdAt(e.getCreatedAt())
+                .updatedAt(e.getUpdatedAt())
+                .build()
+        ).collect(Collectors.toList());
+  }
+
+  @Override
+  public List<ChatroomDTO> searchChatrooms(Long categoryId, String query) {
+
+    List<ChatroomEntity> chatRoomEntities = chatRoomRepository.findByCategoryIdAndQuery(categoryId,
+        query);
+
+    return chatRoomEntities.stream()
+        .map(e -> ChatroomDTO.builder()
             .title(e.getTitle())
             .capacity(e.getCapacity())
+            .entranceMessage(e.getEntranceMessage())
             .createdBy(e.getUserEntity().getUsername())
             .present(e.getPresent())
             .createdAt(e.getCreatedAt())
@@ -83,8 +136,26 @@ public class ChatroomServiceImpl implements ChatroomService {
   }
 
   @Override
+  @Transactional(readOnly = true)
+  public List<ChatroomUserDTO> getChatroomUsers(Long categoryId, Long chatroomId) {
+
+    ChatroomEntity chatroomEntity = chatRoomRepository.findByIdAndCategoryId(chatroomId, categoryId)
+        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+    List<ChatroomUserEntity> chatroomUserEntities = chatRoomUserRepository.findAllByChatRoomEntity(
+        chatroomEntity);
+
+    return chatroomUserEntities.stream()
+        .map(e -> ChatroomUserDTO.builder()
+            .nickname(e.getUserEntity().getNickname())
+            .imageUrl(e.getUserEntity().getImageUrl())
+            .build())
+        .collect(Collectors.toList());
+  }
+
+  @Override
   @Transactional(propagation = Propagation.REQUIRED)
-  public void enterChatRoom(UserDetails userDetails, Long categoryId, Long chatRoomId) {
+  public void enterChatRoom(UserDetails userDetails, Long categoryId, Long chatroomId) {
 
     UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
         .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -92,14 +163,14 @@ public class ChatroomServiceImpl implements ChatroomService {
     CategoryEntity categoryEntity = categoryRepository.findById(categoryId)
         .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-    ChatRoomEntity chatRoomEntity = chatRoomRepository.findById(chatRoomId)
+    ChatroomEntity chatRoomEntity = chatRoomRepository.findById(chatroomId)
         .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
     if (chatRoomEntity.getPresent() == chatRoomEntity.getCapacity()) {
       throw new CustomException(ErrorCode.CHATROOM_FULL);
     }
 
-    ChatRoomUserEntity chatRoomUserEntity = ChatRoomUserEntity.builder()
+    ChatroomUserEntity chatRoomUserEntity = ChatroomUserEntity.builder()
         .userEntity(userEntity)
         .chatRoomEntity(chatRoomEntity)
         .build();
@@ -111,7 +182,7 @@ public class ChatroomServiceImpl implements ChatroomService {
 
   @Override
   @Transactional
-  public void leaveChatRoom(UserDetails userDetails, Long categoryId, Long chatRoomId) {
+  public void leaveChatRoom(UserDetails userDetails, Long categoryId, Long chatroomId) {
 
     UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
         .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -119,10 +190,10 @@ public class ChatroomServiceImpl implements ChatroomService {
     CategoryEntity categoryEntity = categoryRepository.findById(categoryId)
         .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-    ChatRoomEntity chatRoomEntity = chatRoomRepository.findById(chatRoomId)
+    ChatroomEntity chatRoomEntity = chatRoomRepository.findById(chatroomId)
         .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-    ChatRoomUserEntity chatRoomUserEntity = chatRoomUserRepository.findByUserEntity(
+    ChatroomUserEntity chatRoomUserEntity = chatRoomUserRepository.findByUserEntity(
         userEntity).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
     chatRoomEntity.decrementPresent();
@@ -130,7 +201,7 @@ public class ChatroomServiceImpl implements ChatroomService {
     chatRoomUserRepository.delete(chatRoomUserEntity);
 
     if (chatRoomEntity.getUserEntity().equals(userEntity)) {
-      List<ChatRoomUserEntity> chatRoomUserEntities = chatRoomUserRepository.findAllByChatRoomEntity(
+      List<ChatroomUserEntity> chatRoomUserEntities = chatRoomUserRepository.findAllByChatRoomEntity(
           chatRoomEntity);
 
       chatRoomUserRepository.deleteAll(chatRoomUserEntities);
@@ -144,58 +215,14 @@ public class ChatroomServiceImpl implements ChatroomService {
   }
 
   @Override
-  @Transactional(readOnly = true)
-  public ChatRoomDTO getChatRoom(UserDetails userDetails) {
-
-    UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
-        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-    ChatRoomEntity chatRoomEntity = chatRoomRepository.findByUserEntity(userEntity)
-        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-
-    return ChatRoomDTO.builder()
-        .title(chatRoomEntity.getTitle())
-        .capacity(chatRoomEntity.getCapacity())
-        .createdBy(userEntity.getUsername())
-        .present(chatRoomEntity.getPresent())
-        .createdAt(chatRoomEntity.getCreatedAt())
-        .updatedAt(chatRoomEntity.getUpdatedAt())
-        .build();
-  }
-
-  @Override
-  @Transactional(readOnly = true)
-  public List<ChatRoomDTO> getChatRooms(Long categoryId) {
-
-    CategoryEntity categoryEntity = categoryRepository.findById(categoryId)
-        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-
-    List<ChatRoomEntity> chatRoomEntities = chatRoomRepository.findAllByCategoryEntity(
-        categoryEntity);
-
-    return chatRoomEntities.stream()
-        .map(e ->
-            ChatRoomDTO.builder()
-                .id(e.getId())
-                .title(e.getTitle())
-                .capacity(e.getCapacity())
-                .createdBy(e.getCreatedBy())
-                .present(e.getPresent())
-                .createdAt(e.getCreatedAt())
-                .updatedAt(e.getUpdatedAt())
-                .build()
-        ).collect(Collectors.toList());
-  }
-
-  @Override
   @Transactional
   public void updateChatRoom(UserDetails userDetails, Long categoryId, Long chatroomId,
-      ChatRoomDTO chatRoomDTO) {
+      ChatroomDTO chatRoomDTO) {
 
     UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
         .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-    ChatRoomEntity chatRoomEntity = chatRoomRepository.findByUserEntity(userEntity)
+    ChatroomEntity chatRoomEntity = chatRoomRepository.findByUserEntity(userEntity)
         .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
     chatRoomEntity.update(chatRoomDTO);

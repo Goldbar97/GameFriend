@@ -1,23 +1,26 @@
 package com.gamefriend.service;
 
-import com.gamefriend.dto.ChatRoomDTO;
+import com.gamefriend.dto.ChatroomDTO;
+import com.gamefriend.dto.ChatroomUserDTO;
 import java.util.List;
 import org.springframework.security.core.userdetails.UserDetails;
 
 public interface ChatroomService {
 
-  ChatRoomDTO createChatRoom(UserDetails userDetails, Long categoryId, ChatRoomDTO chatRoomDTO);
+  ChatroomDTO createChatRoom(UserDetails userDetails, Long categoryId, ChatroomDTO chatRoomDTO);
 
-  List<ChatRoomDTO> searchChatrooms(Long categoryId, String query);
+  ChatroomDTO getChatRoom(Long categoryId, Long chatroomId);
 
-  void enterChatRoom(UserDetails userDetails, Long categoryId, Long chatRoomId);
+  List<ChatroomDTO> getChatRooms(Long categoryId);
 
-  void leaveChatRoom(UserDetails userDetails, Long categoryId, Long chatRoomId);
+  List<ChatroomDTO> searchChatrooms(Long categoryId, String query);
 
-  ChatRoomDTO getChatRoom(UserDetails userDetails);
+  List<ChatroomUserDTO> getChatroomUsers(Long categoryId, Long chatroomId);
 
-  List<ChatRoomDTO> getChatRooms(Long categoryId);
+  void enterChatRoom(UserDetails userDetails, Long categoryId, Long chatroomId);
+
+  void leaveChatRoom(UserDetails userDetails, Long categoryId, Long chatroomId);
 
   void updateChatRoom(UserDetails userDetails, Long categoryId, Long chatroomId,
-      ChatRoomDTO chatRoomDTO);
+      ChatroomDTO chatRoomDTO);
 }
