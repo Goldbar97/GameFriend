@@ -1,7 +1,7 @@
 package com.gamefriend.controller;
 
 import com.gamefriend.dto.MessageDTO;
-import com.gamefriend.service.ChatService;
+import com.gamefriend.service.MessageService;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Controller;
 @RequiredArgsConstructor
 public class MessageController {
 
-  private final ChatService chatService;
+  private final MessageService messageService;
 
   @MessageMapping("/categories/{categoryId}/chatrooms/{chatroomId}")
   @SendTo("/topic/categories/{categoryId}/chatrooms/{chatroomId}")
@@ -24,6 +24,6 @@ public class MessageController {
 
     System.out.println(principal);
 
-    return chatService.sendMessage(principal, categoryId, chatroomId, message);
+    return messageService.sendMessage(principal, categoryId, chatroomId, message);
   }
 }
