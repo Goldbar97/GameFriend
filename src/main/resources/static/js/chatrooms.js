@@ -56,9 +56,9 @@ function renderChatrooms(categoryId, chatrooms) {
     listItem.innerHTML = `
       <div>
         <h5>${chatroom.title}</h5>
-        <small>생성자: ${chatroom.createdBy}</small>
-        <small>참여자 수: ${chatroom.present}명</small>
-        <small>전체 인원: ${chatroom.capacity}명</small>
+        <small>생성자: ${chatroom.createdBy}</small></br>
+        <small>참여자 수: ${chatroom.present}명</small></br>
+        <small>인원 제한: ${chatroom.capacity}명</small>
       </div>
           <!-- 배지와 버튼을 감싸는 컨테이너 -->
       <div class="d-flex align-items-center">
@@ -72,12 +72,14 @@ function renderChatrooms(categoryId, chatrooms) {
 
 document.addEventListener('DOMContentLoaded', function () {
   const urlParams = new URLSearchParams(window.location.search);
-  const categoryName = urlParams.get('categoryName');  // 카테고리 이름 가져오기
-  const categoryId = urlParams.get('categoryId');  // 카테고리 ID 가져오기
+  const categoryName = decodeURIComponent(urlParams.get('categoryName'));
+  const categoryId = urlParams.get('categoryId');
+  const categoryNameDisplay = document.getElementById('categoryNameDisplay');
 
   // 카테고리 이름이 있을 때, 타이틀에 반영
   if (categoryName) {
     document.title = `Game Friend Chatrooms - ${categoryName}`;
+    categoryNameDisplay.textContent = decodeURIComponent(categoryName);
   }
 
   // 카테고리 ID가 있으면, 해당 ID로 채팅방 목록을 불러옴

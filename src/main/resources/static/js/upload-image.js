@@ -1,4 +1,11 @@
 document.addEventListener('DOMContentLoaded', function() {
+  const token = sessionStorage.getItem('token');
+
+  if (!token) {
+    alert('로그인이 필요한 서비스입니다.');
+    window.location.href = 'signin.html';
+  }
+
   document.getElementById('imageUpload').addEventListener('change', function(event) {
     const file = event.target.files[0];
     if (file) {

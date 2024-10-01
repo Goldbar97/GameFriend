@@ -2,7 +2,6 @@ function submitChatroom() {
   // URL에서 categoryId 가져오기
   const urlParams = new URLSearchParams(window.location.search);
   const categoryId = urlParams.get('categoryId');
-  const categoryName = urlParams.get('categoryName');
   const title = document.getElementById('chatroomTitle').value;
   const entranceMessage = document.getElementById('entranceMessage').value;
   const capacity = document.getElementById('chatroomCapacity').value;
@@ -32,10 +31,20 @@ function submitChatroom() {
       entranceMessage: entranceMessage
     })
   })
-  .then(response => response.json())
+  .then(response => {
+    if (response.status === 409) {
+      alert("이미 생성한 채팅방이 있습니다.");
+      throw new Error("이미 생성한 채팅방이 있습니다.");
+    } else if (!response.ok) {
+      alert("채팅방 생성 중 문제가 발생했습니다.");
+      throw new Error("채팅방 생성 중 문제가 발생했습니다.");
+    }
+    return response.json();
+  })
   .then(data => {
+    const chatroomId = data.responseBody.id;
     alert("채팅방이 생성되었습니다!");
-    window.location.href = `chatroom.html?categoryId=${categoryId}&categoryName=${categoryName}`; // 다시 채팅방 목록으로 리디렉션
+    window.location.href = `chatroom.html?categoryId=${categoryId}&chatroomId=${chatroomId}`; // 다시 채팅방 목록으로 리디렉션
   })
   .catch(error => console.error('Error:', error));
 }

@@ -61,6 +61,7 @@ function signUp() {
     if (!response.ok) {
       throw new Error('회원가입 실패');
     }
+    alert('회원가입을 축하드립니다.');
   })
   .catch(error => {
     console.error('Error:', error);
