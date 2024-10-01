@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +28,7 @@ public class UserServiceImpl implements UserService {
   private final UserRepository userRepository;
 
   @Override
+  @Transactional
   public void signUp(SignDTO signDTO) {
 
     checkDuplication(signDTO);
@@ -58,6 +60,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @Transactional
   public String signIn(SignDTO signDTO) {
 
     UserEntity userEntity = userRepository.findByUsername(signDTO.getUsername())
@@ -75,6 +78,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @Transactional
   public String adminSignIn(String ip, SignDTO signDTO) {
 
     Optional<UserEntity> userEntityOptional = userRepository.findByUsername(signDTO.getUsername());
@@ -93,6 +97,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public UserDTO getProfile(UserDetails userDetails) {
 
     UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
@@ -106,6 +111,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @Transactional
   public void updateProfile(UserDetails userDetails, UserDTO userDTO) {
 
     UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
@@ -129,6 +135,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @Transactional
   public void updatePassword(UserDetails userDetails, PasswordDTO passwordDTO) {
 
     UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
