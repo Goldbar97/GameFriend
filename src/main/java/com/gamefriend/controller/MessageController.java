@@ -1,22 +1,29 @@
 package com.gamefriend.controller;
 
+import com.gamefriend.dto.MessageDTO;
+import com.gamefriend.service.ChatService;
+import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Controller;
 
-@RestController
+@Controller
 @RequiredArgsConstructor
 public class MessageController {
 
-  @MessageMapping("/app/chatrooms/{chatRoomId}/sendMessage")
-  @SendTo("/api/chatrooms/{chatRoomId}")
-  public String sendMessage(@AuthenticationPrincipal UserDetails userDetails,
-      @DestinationVariable Long chatRoomId, String message) {
+  private final ChatService chatService;
 
-    return userDetails.getUsername() + ": " + message;
+  @MessageMapping("/categories/{categoryId}/chatrooms/{chatroomId}")
+  @SendTo("/topic/categories/{categoryId}/chatrooms/{chatroomId}")
+  public MessageDTO sendMessage(@DestinationVariable("categoryId") Long categoryId,
+      @DestinationVariable("chatroomId") Long chatroomId, @Payload String message,
+      Principal principal) {
+
+    System.out.println(principal);
+
+    return chatService.sendMessage(principal, categoryId, chatroomId, message);
   }
 }
