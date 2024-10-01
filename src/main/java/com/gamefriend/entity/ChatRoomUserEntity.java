@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Entity(name = "CHATROOM_USER")
 @Getter
 @NoArgsConstructor
-public class ChatRoomUserEntity extends BaseEntity {
+public class ChatroomUserEntity extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,5 +26,5 @@ public class ChatRoomUserEntity extends BaseEntity {
   private UserEntity userEntity;
 
   @ManyToOne
-  private ChatRoomEntity chatRoomEntity;
+  private ChatroomEntity chatRoomEntity;
 }
