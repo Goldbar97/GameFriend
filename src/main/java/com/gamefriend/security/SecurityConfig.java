@@ -40,7 +40,9 @@ public class SecurityConfig {
             .permitAll()
             .requestMatchers(HttpMethod.GET, "/api/categories", "/api/categories/search/**")
             .permitAll()
-            .requestMatchers(HttpMethod.GET, "/api/categories/*/chatrooms")
+            .requestMatchers(HttpMethod.GET, "/api/categories/*/chatrooms/**")
+            .permitAll()
+            .requestMatchers("/", "/*.html", "/css/**", "/js/**", "/src/**", "/favicon.ico")
             .permitAll()
             .requestMatchers("/api/users/profile", "/api/users/password")
             .authenticated()
@@ -56,13 +58,16 @@ public class SecurityConfig {
     CorsConfiguration configuration = new CorsConfiguration();
 
     // 모든 출처 허용
-    configuration.setAllowedOrigins(List.of("*"));
+    configuration.setAllowedOrigins(List.of("http://localhost:8080"));
 
     // 허용할 메서드 설정
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
 
     // 모든 헤더 허용
     configuration.setAllowedHeaders(List.of("*"));
+
+    //
+    configuration.setAllowCredentials(true);
 
     // 서버가 보내는 헤더 허용
     configuration.setExposedHeaders(List.of("Authorization"));
