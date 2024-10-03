@@ -1,13 +1,15 @@
 .chat-container {
-  height: calc(100vh - 56px); /* 네비게이션 높이를 제외한 전체 높이 */
+  height: 65vh;
   display: flex;
   flex-direction: row;
+  margin-bottom: 85px;
 }
 /* 채팅 메시지 영역 */
 .chat-messages {
   flex-grow: 1;
   padding: 20px;
   overflow-y: scroll;
+  border: 2px solid #ccc;
   border-right: 1px solid #ccc;
   background-color: #f9f9f9;
 }

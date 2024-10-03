@@ -11,7 +11,7 @@ function wsConnect() {
 
   // WebSocket 연결 설정
   stompClient.connect(
-      { Authorization: `Bearer ${token}` },  // JWT 토큰을 Authorization 헤더에 포함
+      {Authorization: `Bearer ${token}`},  // JWT 토큰을 Authorization 헤더에 포함
       (frame) => {
         console.log('STOMP 연결 성공');
 
@@ -22,16 +22,27 @@ function wsConnect() {
               const messageBody = JSON.parse(message.body);
 
               const nickname = messageBody.nickname;
-              const imageUrl = messageBody.imageUrl;
+              const imageUrl = messageBody.imageUrl
+                  ?? 'src/default-profile-image.png';
               const chatMessage = messageBody.message;
               const createdAt = messageBody.createdAt;
 
               const messageElement = document.createElement('div');
               messageElement.classList.add('message');
               messageElement.innerHTML = `
-                <div class="nickname">${nickname}</div>
-                <div class="chatMessage">${chatMessage}</div>
-                <div class="createdAt">${createdAt}</div>
+                <div class="d-flex align-items-start mb-3">
+                  <img src="${imageUrl}" alt="Profile Image" class="rounded-circle me-3 profile-image">
+                  <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between">
+                      <strong>${nickname}</strong>
+                      <small class="text-muted">${new Date(
+                  createdAt).toLocaleString()}</small>
+                    </div>
+                    <div class="bg-light p-2 rounded border mt-1">
+                      ${chatMessage}
+                    </div>
+                  </div>
+                </div>
               `;
               chatBox.appendChild(messageElement);
               chatBox.scrollTop = chatBox.scrollHeight; // 스크롤 하단으로 이동
@@ -53,9 +64,13 @@ function sendMessage() {
   const message = document.getElementById('messageInput').value;
   if (message.trim()) {
     stompClient.send(`/app/categories/${categoryId}/chatrooms/${chatroomId}`,
-        {}, JSON.stringify(message));
+        {}, message);
     messageInput.value = ""; // 입력란 초기화
   }
+}
+
+function sendParticipant() {
+
 }
 
 function confirmLeave() {
@@ -73,6 +88,13 @@ function leaveChatroom() {
   xhr.send();
 
   window.location.href = 'index.html';
+}
+
+function addParticipantToList(listGroup, nickname) {
+  const groupItem = document.createElement('li');
+  groupItem.classList.add('list-group-item');
+  groupItem.textContent = nickname;
+  listGroup.appendChild(groupItem);
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -112,6 +134,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('chatroomName').textContent = chatroomName;
     document.getElementById('entranceMessage').textContent = entranceMessage;
+  })
+
+  fetch(
+      `http://localhost:8080/api/categories/${categoryId}/chatrooms/${chatroomId}/users`,
+      {
+        method: 'GET'
+      })
+  .then(response => response.json())
+  .then(data => {
+    const participants = data.responseBody;
+    const listGroup = document.getElementsByClassName('list-group').item(0);
+    participants.forEach(participant => {
+      addParticipantToList(listGroup, participant.nickname);
+    })
   })
 
   wsConnect();
