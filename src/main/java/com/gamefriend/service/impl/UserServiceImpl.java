@@ -3,7 +3,8 @@ package com.gamefriend.service.impl;
 import com.gamefriend.component.JwtProvider;
 import com.gamefriend.component.RedisComponent;
 import com.gamefriend.dto.PasswordDTO;
-import com.gamefriend.dto.SignDTO;
+import com.gamefriend.dto.SignInDTO;
+import com.gamefriend.dto.SignUpDTO;
 import com.gamefriend.dto.UserDTO;
 import com.gamefriend.entity.UserEntity;
 import com.gamefriend.exception.CustomException;
@@ -29,15 +30,15 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional
-  public void signUp(SignDTO signDTO) {
+  public void signUp(SignUpDTO signUpDTO) {
 
-    checkDuplication(signDTO);
-    checkPasswordEquality(signDTO);
+    checkDuplication(signUpDTO);
+    checkPasswordEquality(signUpDTO);
 
     UserEntity userEntity = UserEntity.builder()
-        .username(signDTO.getUsername())
-        .nickname(signDTO.getNickname())
-        .password(passwordEncoder.encode(signDTO.getPassword()))
+        .username(signUpDTO.getUsername())
+        .nickname(signUpDTO.getNickname())
+        .password(passwordEncoder.encode(signUpDTO.getPassword()))
         .role(UserRole.ROLE_USER)
         .build();
 
@@ -45,30 +46,30 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public void checkDuplication(SignDTO signDTO) {
+  public void checkDuplication(SignUpDTO signUpDTO) {
 
-    if (userRepository.existsByUsername(signDTO.getUsername())) {
+    if (userRepository.existsByUsername(signUpDTO.getUsername())) {
       throw new CustomException(ErrorCode.USERNAME_EXISTS);
     }
   }
 
-  private void checkPasswordEquality(SignDTO signDTO) {
+  private void checkPasswordEquality(SignUpDTO signUpDTO) {
 
-    if (!signDTO.getPassword().equals(signDTO.getPasswordVerify())) {
+    if (!signUpDTO.getPassword().equals(signUpDTO.getPasswordVerify())) {
       throw new CustomException(ErrorCode.PASSWORD_NOT_EQUAL);
     }
   }
 
   @Override
   @Transactional
-  public String signIn(SignDTO signDTO) {
+  public String signIn(SignInDTO SignInDTO) {
 
-    UserEntity userEntity = userRepository.findByUsername(signDTO.getUsername())
+    UserEntity userEntity = userRepository.findByUsername(SignInDTO.getUsername())
         .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     String username = userEntity.getUsername();
     UserRole role = userEntity.getRole();
 
-    if (!passwordEncoder.matches(signDTO.getPassword(), userEntity.getPassword())) {
+    if (!passwordEncoder.matches(SignInDTO.getPassword(), userEntity.getPassword())) {
       redisComponent.signInFailed(username);
       throw new CustomException(ErrorCode.WRONG_PASSWORD);
     }
@@ -79,9 +80,9 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional
-  public String adminSignIn(String ip, SignDTO signDTO) {
+  public String adminSignIn(String ip, SignInDTO signInDTO) {
 
-    Optional<UserEntity> userEntityOptional = userRepository.findByUsername(signDTO.getUsername());
+    Optional<UserEntity> userEntityOptional = userRepository.findByUsername(signInDTO.getUsername());
 
     if (userEntityOptional.isEmpty()) {
       redisComponent.signInFailed(ip);

@@ -1,7 +1,8 @@
 package com.gamefriend.controller;
 
 import com.gamefriend.dto.PasswordDTO;
-import com.gamefriend.dto.SignDTO;
+import com.gamefriend.dto.SignInDTO;
+import com.gamefriend.dto.SignUpDTO;
 import com.gamefriend.dto.UserDTO;
 import com.gamefriend.response.ApiResponse;
 import com.gamefriend.response.ApiResponseBody;
@@ -26,32 +27,32 @@ public class UserController {
   private final UserService userService;
 
   @PostMapping("/api/users/signup")
-  public ResponseEntity<ApiResponse> signUp(@RequestBody @Validated SignDTO signDTO) {
+  public ResponseEntity<ApiResponse> signUp(@RequestBody @Validated SignUpDTO signUpDTO) {
 
-    userService.signUp(signDTO);
+    userService.signUp(signUpDTO);
     return ResponseEntity.ok(ApiResponse.ok());
   }
 
   @PostMapping("/api/users/check-duplication")
-  public ResponseEntity<ApiResponse> checkDuplication(@RequestBody @Validated SignDTO signDTO) {
+  public ResponseEntity<ApiResponse> checkDuplication(@RequestBody @Validated SignUpDTO signUpDTO) {
 
-    userService.checkDuplication(signDTO);
+    userService.checkDuplication(signUpDTO);
     return ResponseEntity.ok(ApiResponse.ok());
   }
 
   @PostMapping("/api/users/signin")
-  public ResponseEntity<ApiResponseBody<String>> signIn(@RequestBody @Validated SignDTO signDTO) {
+  public ResponseEntity<ApiResponseBody<String>> signIn(@RequestBody @Validated SignInDTO signInDTO) {
 
-    String token = userService.signIn(signDTO);
+    String token = userService.signIn(signInDTO);
     return ResponseEntity.ok(ApiResponseBody.okBody(token));
   }
 
   @PostMapping("/api/admins/signin")
   public ResponseEntity<ApiResponseBody<String>> adminSignIn(HttpServletRequest request,
-      @RequestBody @Validated SignDTO signDTO) {
+      @RequestBody @Validated SignInDTO signInDTO) {
 
     String ip = ClientUtils.getIP(request);
-    String token = userService.adminSignIn(ip, signDTO);
+    String token = userService.adminSignIn(ip, signInDTO);
     return ResponseEntity.ok(ApiResponseBody.okBody(token));
   }
 

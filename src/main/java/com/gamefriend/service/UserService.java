@@ -1,19 +1,20 @@
 package com.gamefriend.service;
 
 import com.gamefriend.dto.PasswordDTO;
-import com.gamefriend.dto.SignDTO;
+import com.gamefriend.dto.SignInDTO;
+import com.gamefriend.dto.SignUpDTO;
 import com.gamefriend.dto.UserDTO;
 import org.springframework.security.core.userdetails.UserDetails;
 
 public interface UserService {
 
-  void signUp(SignDTO signDTO);
+  void signUp(SignUpDTO signUpDTO);
 
-  void checkDuplication(SignDTO signDTO);
+  void checkDuplication(SignUpDTO signUpDTO);
 
-  String signIn(SignDTO signDTO);
+  String signIn(SignInDTO SignInDTO);
 
-  String adminSignIn(String ip, SignDTO signDTO);
+  String adminSignIn(String ip, SignInDTO signInDTO);
 
   UserDTO getProfile(UserDetails userDetails);
 
