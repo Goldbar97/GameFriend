@@ -1,6 +1,7 @@
 package com.gamefriend.service;
 
 import com.gamefriend.dto.CategoryDTO;
+import com.gamefriend.dto.CategoryStatsDTO;
 import java.util.List;
 
 public interface CategoryService {
@@ -9,7 +10,7 @@ public interface CategoryService {
 
   List<CategoryDTO> searchCategories(String query);
 
-  List<CategoryDTO> getCategories();
+  List<CategoryStatsDTO> getCategories();
 
   void updateCategory(Long categoryId, CategoryDTO categoryDTO);
 

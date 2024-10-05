@@ -1,6 +1,7 @@
 package com.gamefriend.controller;
 
 import com.gamefriend.dto.CategoryDTO;
+import com.gamefriend.dto.CategoryStatsDTO;
 import com.gamefriend.response.ApiResponse;
 import com.gamefriend.response.ApiResponseBody;
 import com.gamefriend.service.CategoryService;
@@ -43,23 +44,26 @@ public class CategoryController {
   }
 
   @GetMapping("/api/categories")
-  public ResponseEntity<ApiResponseBody<List<CategoryDTO>>> getCategories() {
+  public ResponseEntity<ApiResponseBody<List<CategoryStatsDTO>>> getCategories() {
 
-    List<CategoryDTO> categories = categoryService.getCategories();
+    List<CategoryStatsDTO> categories = categoryService.getCategories();
     return ResponseEntity.ok(ApiResponseBody.okBody(categories));
   }
 
   @PreAuthorize("hasRole('ADMIN')")
   @PutMapping("/api/categories/{categoryId}")
-  public void updateCategory(@PathVariable Long categoryId, @Validated CategoryDTO categoryDTO) {
+  public ResponseEntity<ApiResponse> updateCategory(@PathVariable Long categoryId,
+      @Validated CategoryDTO categoryDTO) {
 
     categoryService.updateCategory(categoryId, categoryDTO);
+    return ResponseEntity.ok(ApiResponse.ok());
   }
 
   @PreAuthorize("hasRole('ADMIN')")
   @DeleteMapping("/api/categories/{categoryId}")
-  public void deleteCategory(@PathVariable Long categoryId) {
+  public ResponseEntity<ApiResponse> deleteCategory(@PathVariable Long categoryId) {
 
     categoryService.deleteCategory(categoryId);
+    return ResponseEntity.ok(ApiResponse.ok());
   }
 }

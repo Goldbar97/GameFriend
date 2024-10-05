@@ -1,6 +1,7 @@
 package com.gamefriend.service.impl;
 
 import com.gamefriend.dto.CategoryDTO;
+import com.gamefriend.dto.CategoryStatsDTO;
 import com.gamefriend.entity.CategoryEntity;
 import com.gamefriend.exception.CustomException;
 import com.gamefriend.exception.ErrorCode;
@@ -54,20 +55,9 @@ public class CategoryServiceImpl implements CategoryService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<CategoryDTO> getCategories() {
+  public List<CategoryStatsDTO> getCategories() {
 
-    List<CategoryEntity> categoryEntities = categoryRepository.findTop10ByOrderByParticipantsDesc();
-
-    return categoryEntities.stream()
-        .map(e ->
-            CategoryDTO.builder()
-                .id(e.getId())
-                .name(e.getName())
-                .rooms(e.getRooms())
-                .participants(e.getParticipants())
-                .build()
-        )
-        .collect(Collectors.toList());
+    return categoryRepository.findCategoryStats();
   }
 
   @Override
