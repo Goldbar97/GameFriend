@@ -4,6 +4,7 @@ import com.gamefriend.dto.PasswordDTO;
 import com.gamefriend.dto.SignInDTO;
 import com.gamefriend.dto.SignUpDTO;
 import com.gamefriend.dto.UserDTO;
+import com.gamefriend.dto.UsernameDTO;
 import com.gamefriend.response.ApiResponse;
 import com.gamefriend.response.ApiResponseBody;
 import com.gamefriend.service.UserService;
@@ -34,9 +35,9 @@ public class UserController {
   }
 
   @PostMapping("/api/users/check-duplication")
-  public ResponseEntity<ApiResponse> checkDuplication(@RequestBody @Validated SignUpDTO signUpDTO) {
+  public ResponseEntity<ApiResponse> checkDuplication(@RequestBody @Validated UsernameDTO usernameDTO) {
 
-    userService.checkDuplication(signUpDTO);
+    userService.checkDuplication(usernameDTO);
     return ResponseEntity.ok(ApiResponse.ok());
   }
 
@@ -49,10 +50,10 @@ public class UserController {
 
   @PostMapping("/api/admins/signin")
   public ResponseEntity<ApiResponseBody<String>> adminSignIn(HttpServletRequest request,
-      @RequestBody @Validated SignInDTO signInDTO) {
+      @RequestBody @Validated UsernameDTO usernameDTO) {
 
     String ip = ClientUtils.getIP(request);
-    String token = userService.adminSignIn(ip, signInDTO);
+    String token = userService.adminSignIn(ip, usernameDTO);
     return ResponseEntity.ok(ApiResponseBody.okBody(token));
   }
 
