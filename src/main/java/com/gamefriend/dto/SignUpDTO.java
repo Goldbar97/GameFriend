@@ -19,7 +19,7 @@ public class SignUpDTO {
 
   @NotBlank(message = "Nickname cannot be blank")
   @Size(min = 2, max = 20, message = "Nickname must be between 2 and 20 characters")
-  @Pattern(regexp = "^[a-zA-Z0-9!@#$%^&*()_+=-]*$", message = "Nickname can only contain letters, numbers, and special characters")
+  @Pattern(regexp = "^[a-zA-Z0-9가-힣!@#$%^&*()_+=\\s-]*$", message = "Nickname can only contain letters, numbers, and special characters")
   private String nickname;
 
   @NotBlank(message = "Password cannot be blank")
