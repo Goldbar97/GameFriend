@@ -20,6 +20,7 @@ public enum ErrorCode {
   USERNAME_EXISTS(409, "Username already exists"),
   USER_NOT_FOUND(404, "User doesn't exist"),
   USING_SAME_PASSWORD(409, "The password is already in use"),
+  WRONG_CHATROOM_USER(404, "The user doesn't belong to the chatroom"),
   WRONG_PASSWORD(400, "Wrong password");
 
   private final int statusCode;

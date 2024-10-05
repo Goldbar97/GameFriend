@@ -53,22 +53,4 @@ public class ChatroomEntity extends BaseEntity {
     title = chatRoomDTO.getTitle();
     capacity = chatRoomDTO.getCapacity();
   }
-
-  public void incrementPresent() {
-
-    if (present == capacity) {
-      return;
-    }
-
-    present++;
-  }
-
-  public void decrementPresent() {
-
-    if (present == 0) {
-      return;
-    }
-
-    present--;
-  }
 }

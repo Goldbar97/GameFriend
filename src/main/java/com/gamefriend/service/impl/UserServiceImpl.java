@@ -6,6 +6,7 @@ import com.gamefriend.dto.PasswordDTO;
 import com.gamefriend.dto.SignInDTO;
 import com.gamefriend.dto.SignUpDTO;
 import com.gamefriend.dto.UserDTO;
+import com.gamefriend.dto.UsernameDTO;
 import com.gamefriend.entity.UserEntity;
 import com.gamefriend.exception.CustomException;
 import com.gamefriend.exception.ErrorCode;
@@ -30,34 +31,22 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional
-  public void signUp(SignUpDTO signUpDTO) {
+  public String adminSignIn(String ip, UsernameDTO usernameDTO) {
 
-    checkDuplication(signUpDTO);
-    checkPasswordEquality(signUpDTO);
+    Optional<UserEntity> userEntityOptional = userRepository.findByUsername(
+        usernameDTO.getUsername());
 
-    UserEntity userEntity = UserEntity.builder()
-        .username(signUpDTO.getUsername())
-        .nickname(signUpDTO.getNickname())
-        .password(passwordEncoder.encode(signUpDTO.getPassword()))
-        .role(UserRole.ROLE_USER)
-        .build();
-
-    userRepository.save(userEntity);
-  }
-
-  @Override
-  public void checkDuplication(SignUpDTO signUpDTO) {
-
-    if (userRepository.existsByUsername(signUpDTO.getUsername())) {
-      throw new CustomException(ErrorCode.USERNAME_EXISTS);
+    if (userEntityOptional.isEmpty()) {
+      redisComponent.signInFailed(ip);
+      throw new CustomException(ErrorCode.USER_NOT_FOUND);
     }
-  }
+    redisComponent.signInSuccess(ip);
 
-  private void checkPasswordEquality(SignUpDTO signUpDTO) {
+    UserEntity userEntity = userEntityOptional.get();
+    String username = userEntity.getUsername();
+    UserRole role = userEntity.getRole();
 
-    if (!signUpDTO.getPassword().equals(signUpDTO.getPasswordVerify())) {
-      throw new CustomException(ErrorCode.PASSWORD_NOT_EQUAL);
-    }
+    return jwtProvider.generateToken(username, role);
   }
 
   @Override
@@ -75,25 +64,11 @@ public class UserServiceImpl implements UserService {
     }
     redisComponent.signInSuccess(username);
 
-    return jwtProvider.generateToken(username, role);
-  }
-
-  @Override
-  @Transactional
-  public String adminSignIn(String ip, SignInDTO signInDTO) {
-
-    Optional<UserEntity> userEntityOptional = userRepository.findByUsername(signInDTO.getUsername());
-
-    if (userEntityOptional.isEmpty()) {
-      redisComponent.signInFailed(ip);
-      throw new CustomException(ErrorCode.USER_NOT_FOUND);
-    }
-    redisComponent.signInSuccess(ip);
-
-    UserEntity userEntity = userEntityOptional.get();
-    String username = userEntity.getUsername();
-    UserRole role = userEntity.getRole();
-
+    redisComponent.saveUserDTO(username, UserDTO.builder()
+        .id(userEntity.getId())
+        .nickname(userEntity.getNickname())
+        .imageUrl(userEntity.getImageUrl())
+        .build());
     return jwtProvider.generateToken(username, role);
   }
 
@@ -101,38 +76,48 @@ public class UserServiceImpl implements UserService {
   @Transactional(readOnly = true)
   public UserDTO getProfile(UserDetails userDetails) {
 
-    UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
-        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    UserDTO userDTO = redisComponent.getUserDTO(userDetails.getUsername());
 
-    return UserDTO.builder()
-        .username(userEntity.getUsername())
-        .nickname(userEntity.getNickname())
-        .imageUrl(userEntity.getImageUrl())
-        .build();
+    if (userDTO == null) {
+      UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
+          .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+      userDTO = UserDTO.builder()
+          .id(userEntity.getId())
+          .nickname(userEntity.getNickname())
+          .imageUrl(userEntity.getImageUrl())
+          .build();
+
+      redisComponent.saveUserDTO(userDetails.getUsername(), userDTO);
+    }
+
+    return userDTO;
+  }
+
+  @Override
+  public void checkDuplication(UsernameDTO usernameDTO) {
+
+    if (userRepository.existsByUsername(usernameDTO.getUsername())) {
+      throw new CustomException(ErrorCode.USERNAME_EXISTS);
+    }
   }
 
   @Override
   @Transactional
-  public void updateProfile(UserDetails userDetails, UserDTO userDTO) {
+  public void signUp(SignUpDTO signUpDTO) {
 
-    UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
-        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    checkDuplication(new UsernameDTO(signUpDTO.getUsername()));
+    checkPasswordEquality(signUpDTO);
 
-    userEntity.update(userDTO);
-  }
+    UserEntity userEntity = UserEntity.builder()
+        .username(signUpDTO.getUsername())
+        .nickname(signUpDTO.getNickname())
+        .imageUrl("src/default-profile-image.png")
+        .password(passwordEncoder.encode(signUpDTO.getPassword()))
+        .role(UserRole.ROLE_USER)
+        .build();
 
-  @Override
-  public void verifyPassword(UserDetails userDetails, PasswordDTO passwordDTO) {
-
-    UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
-        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-    String username = userEntity.getUsername();
-
-    if (!passwordEncoder.matches(passwordDTO.getPassword(), userEntity.getPassword())) {
-      redisComponent.signInFailed(username);
-      throw new CustomException(ErrorCode.WRONG_PASSWORD);
-    }
-    redisComponent.signInSuccess(username);
+    userRepository.save(userEntity);
   }
 
   @Override
@@ -151,5 +136,42 @@ public class UserServiceImpl implements UserService {
     }
 
     userEntity.updatePassword(passwordEncoder.encode(passwordDTO.getPassword()));
+  }
+
+  @Override
+  @Transactional
+  public void updateProfile(UserDetails userDetails, UserDTO userDTO) {
+
+    UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+    userEntity.update(userDTO);
+    redisComponent.saveUserDTO(userEntity.getUsername(), UserDTO.builder()
+        .id(userEntity.getId())
+        .nickname(userEntity.getNickname())
+        .imageUrl(userEntity.getImageUrl())
+        .build());
+  }
+
+  @Override
+  @Transactional
+  public void verifyPassword(UserDetails userDetails, PasswordDTO passwordDTO) {
+
+    UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    String username = userEntity.getUsername();
+
+    if (!passwordEncoder.matches(passwordDTO.getPassword(), userEntity.getPassword())) {
+      redisComponent.signInFailed(username);
+      throw new CustomException(ErrorCode.WRONG_PASSWORD);
+    }
+    redisComponent.signInSuccess(username);
+  }
+
+  private void checkPasswordEquality(SignUpDTO signUpDTO) {
+
+    if (!signUpDTO.getPassword().equals(signUpDTO.getPasswordVerify())) {
+      throw new CustomException(ErrorCode.PASSWORD_NOT_EQUAL);
+    }
   }
 }

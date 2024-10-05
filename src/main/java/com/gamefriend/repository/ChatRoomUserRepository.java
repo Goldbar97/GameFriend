@@ -15,4 +15,6 @@ public interface ChatroomUserRepository extends
   Optional<ChatroomUserEntity> findByUserEntity(UserEntity userEntity);
 
   List<ChatroomUserEntity> findAllByChatRoomEntity(ChatroomEntity chatRoomEntity);
+
+  boolean existsByUserEntityAndChatRoomEntity(UserEntity userEntity, ChatroomEntity chatroomEntity);
 }
