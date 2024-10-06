@@ -23,11 +23,11 @@ public class RedisComponent {
   private final StringRedisTemplate stringRedisTemplate;
   private final ObjectMapper objectMapper;
   @Value("${spring.security.maximum-sign-in-attempt}")
-  private int maxAttempt;
+  private long maxAttempt;
   @Value("${spring.security.lock-duration}")
-  private int lockDuration;
+  private long lockDuration;
   @Value("${jwt.secret.expiration}")
-  private int jwtDuration;
+  private long jwtDuration;
 
   public void signInFailed(String key) {
 

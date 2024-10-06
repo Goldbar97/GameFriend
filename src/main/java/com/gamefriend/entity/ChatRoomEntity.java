@@ -3,10 +3,13 @@ package com.gamefriend.entity;
 import com.gamefriend.dto.ChatroomDTO;
 import com.gamefriend.exception.CustomException;
 import com.gamefriend.exception.ErrorCode;
+import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
@@ -26,16 +29,18 @@ public class ChatroomEntity extends BaseEntity {
   private Long id;
 
   @OneToOne
+  @JoinColumn(name = "user_entity_id")
   private UserEntity userEntity;
 
   @ManyToOne
+  @JoinColumn(name = "category_entity_id")
   private CategoryEntity categoryEntity;
 
   private String title;
   private String entranceMessage;
   private String createdBy;
-  private int capacity;
-  private int present;
+  private long capacity;
+  private long present;
 
   @Override
   public boolean equals(Object o) {
@@ -52,5 +57,10 @@ public class ChatroomEntity extends BaseEntity {
 
     title = chatRoomDTO.getTitle();
     capacity = chatRoomDTO.getCapacity();
+  }
+
+  public void update(Long count) {
+
+    present = count;
   }
 }

@@ -20,11 +20,11 @@ public class ChatroomDTO {
   private String title;
 
   @Min(value = 1)
-  private int capacity;
+  private long capacity;
 
   private String entranceMessage;
   private String createdBy;
-  private int present;
+  private long present;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 }

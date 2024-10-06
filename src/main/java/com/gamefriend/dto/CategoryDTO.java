@@ -17,6 +17,6 @@ public class CategoryDTO {
   @NotBlank
   private String name;
 
-  private int rooms;
-  private int participants;
+  private long rooms;
+  private long participants;
 }
