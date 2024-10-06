@@ -9,5 +9,9 @@ public interface MessageService {
 
   MessageDTO<ChatDTO> sendMessage(Principal principal, Long categoryId, Long chatroomId, String message);
 
-  MessageDTO<UserDTO> sendUserInfo(UserDTO userDTO);
+  MessageDTO<UserDTO> sendUserInfo(Principal principal, String sessionId);
+
+  MessageDTO<UserDTO> sendLeaveInfo(Principal principal);
+
+  void handleUserDisconnection(String sessionId);
 }

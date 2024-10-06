@@ -11,11 +11,15 @@ import com.gamefriend.entity.UserEntity;
 import com.gamefriend.exception.CustomException;
 import com.gamefriend.exception.ErrorCode;
 import com.gamefriend.repository.UserRepository;
+import com.gamefriend.security.CustomUserDetails;
 import com.gamefriend.service.UserService;
 import com.gamefriend.type.UserRole;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -173,5 +177,15 @@ public class UserServiceImpl implements UserService {
     if (!signUpDTO.getPassword().equals(signUpDTO.getPasswordVerify())) {
       throw new CustomException(ErrorCode.PASSWORD_NOT_EQUAL);
     }
+  }
+
+  @Override
+  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+
+    UserEntity userEntity = userRepository.findByUsername(username)
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+    return new CustomUserDetails(userEntity.getUsername(),
+        List.of(new SimpleGrantedAuthority(userEntity.getRole().name())));
   }
 }

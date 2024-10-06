@@ -1,5 +1,6 @@
 package com.gamefriend.service;
 
+import com.gamefriend.dto.ChatDTO;
 import com.gamefriend.dto.ChatroomDTO;
 import com.gamefriend.dto.UserDTO;
 import java.util.List;
@@ -19,10 +20,10 @@ public interface ChatroomService {
 
   void enterChatRoom(UserDetails userDetails, Long categoryId, Long chatroomId);
 
-  void leaveChatRoom(UserDetails userDetails, Long categoryId, Long chatroomId);
-
   void updateChatRoom(UserDetails userDetails, Long categoryId, Long chatroomId,
       ChatroomDTO chatRoomDTO);
 
   void checkUser(UserDetails userDetails, Long categoryId, Long chatroomId);
+
+  List<ChatDTO> getChat(Long categoryId, Long chatroomId);
 }

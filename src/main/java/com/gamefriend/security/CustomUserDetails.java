@@ -6,12 +6,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 public class CustomUserDetails implements UserDetails {
 
-  private final String email;
+  private final String username;
   private final Collection<? extends GrantedAuthority> authorities;
 
-  public CustomUserDetails(String email, Collection<? extends GrantedAuthority> authorities) {
+  public CustomUserDetails(String username, Collection<? extends GrantedAuthority> authorities) {
 
-    this.email = email;
+    this.username = username;
     this.authorities = authorities;
   }
 
@@ -30,7 +30,7 @@ public class CustomUserDetails implements UserDetails {
   @Override
   public String getUsername() {
 
-    return email;
+    return username;
   }
 
   @Override

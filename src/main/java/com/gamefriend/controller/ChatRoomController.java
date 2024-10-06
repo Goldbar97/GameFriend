@@ -1,5 +1,6 @@
 package com.gamefriend.controller;
 
+import com.gamefriend.dto.ChatDTO;
 import com.gamefriend.dto.ChatroomDTO;
 import com.gamefriend.dto.UserDTO;
 import com.gamefriend.response.ApiResponse;
@@ -11,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -51,14 +51,6 @@ public class ChatroomController {
     return ResponseEntity.ok(ApiResponse.ok());
   }
 
-  @DeleteMapping("/api/categories/{categoryId}/chatrooms/{chatroomId}/leave")
-  public ResponseEntity<ApiResponse> leaveChatroom(@AuthenticationPrincipal UserDetails userDetails,
-      @PathVariable("categoryId") Long categoryId, @PathVariable("chatroomId") Long chatroomId) {
-
-    chatroomService.leaveChatRoom(userDetails, categoryId, chatroomId);
-    return ResponseEntity.ok(ApiResponse.ok());
-  }
-
   @GetMapping("/api/categories/{categoryId}/chatrooms/{chatroomId}")
   public ResponseEntity<ApiResponseBody<ChatroomDTO>> getChatroom(
       @PathVariable("categoryId") Long categoryId, @PathVariable("chatroomId") Long chatroomId) {
@@ -94,20 +86,19 @@ public class ChatroomController {
     return ResponseEntity.ok(ApiResponse.ok());
   }
 
-  @DeleteMapping("/api/categories/{categoryId}/chatrooms/{chatroomId}")
-  public ResponseEntity<ApiResponse> deleteChatRoom(
-      @AuthenticationPrincipal UserDetails userDetails, @PathVariable("categoryId") Long categoryId,
-      @PathVariable("chatroomId") Long chatroomId) {
-
-    chatroomService.leaveChatRoom(userDetails, categoryId, chatroomId);
-    return ResponseEntity.ok(ApiResponse.ok());
-  }
-
   @GetMapping("/api/categories/{categoryId}/chatrooms/{chatroomId}/check-user")
   public ResponseEntity<ApiResponse> checkUser(@AuthenticationPrincipal UserDetails userDetails,
       @PathVariable("categoryId") Long categoryId, @PathVariable("chatroomId") Long chatroomId) {
 
     chatroomService.checkUser(userDetails, categoryId, chatroomId);
     return ResponseEntity.ok(ApiResponse.ok());
+  }
+
+  @GetMapping("/api/categories/{categoryId}/chatrooms/{chatroomId}/chat")
+  public ResponseEntity<ApiResponseBody<List<ChatDTO>>> getChat(
+      @PathVariable("categoryId") Long categoryId, @PathVariable("chatroomId") Long chatroomId) {
+
+    List<ChatDTO> chatDTOs = chatroomService.getChat(categoryId, chatroomId);
+    return ResponseEntity.ok(ApiResponseBody.okBody(chatDTOs));
   }
 }

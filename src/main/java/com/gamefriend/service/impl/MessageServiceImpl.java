@@ -5,16 +5,23 @@ import com.gamefriend.dto.ChatDTO;
 import com.gamefriend.dto.MessageDTO;
 import com.gamefriend.dto.UserDTO;
 import com.gamefriend.entity.ChatroomEntity;
-import com.gamefriend.entity.MessageEntity;
+import com.gamefriend.entity.ChatroomUserEntity;
+import com.gamefriend.entity.ChatEntity;
 import com.gamefriend.entity.UserEntity;
 import com.gamefriend.exception.CustomException;
 import com.gamefriend.exception.ErrorCode;
 import com.gamefriend.repository.ChatroomRepository;
+import com.gamefriend.repository.ChatroomUserRepository;
 import com.gamefriend.repository.MessageRepository;
 import com.gamefriend.repository.UserRepository;
 import com.gamefriend.service.MessageService;
 import java.security.Principal;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,9 +30,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class MessageServiceImpl implements MessageService {
 
   private final ChatroomRepository chatroomRepository;
+  private final ChatroomUserRepository chatroomUserRepository;
   private final MessageRepository messageRepository;
   private final UserRepository userRepository;
   private final RedisComponent redisComponent;
+  private final SimpMessagingTemplate simpMessagingTemplate;
+
+  private final Map<String, Principal> sessionPrincipals = new ConcurrentHashMap<>();
 
   @Override
   @Transactional
@@ -38,13 +49,13 @@ public class MessageServiceImpl implements MessageService {
     ChatroomEntity chatroomEntity = chatroomRepository.findByIdAndCategoryId(chatroomId, categoryId)
         .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-    MessageEntity messageEntity = MessageEntity.builder()
+    ChatEntity chatEntity = ChatEntity.builder()
         .userEntity(userEntity)
-        .chatRoomEntity(chatroomEntity)
+        .chatroomEntity(chatroomEntity)
         .message(message)
         .build();
 
-    MessageEntity saved = messageRepository.save(messageEntity);
+    ChatEntity saved = messageRepository.save(chatEntity);
 
     return MessageDTO.<ChatDTO>builder()
         .type("chat")
@@ -59,11 +70,94 @@ public class MessageServiceImpl implements MessageService {
   }
 
   @Override
-  public MessageDTO<UserDTO> sendUserInfo(UserDTO userDTO) {
+  public MessageDTO<UserDTO> sendUserInfo(Principal principal, String sessionId) {
+
+    sessionPrincipals.put(sessionId, principal);
+    UserDTO userDTO = redisComponent.getUserDTO(principal.getName());
+
+    if (userDTO == null) {
+      UserEntity userEntity = userRepository.findByUsername(principal.getName())
+          .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+      userDTO = UserDTO.builder()
+          .id(userEntity.getId())
+          .nickname(userEntity.getNickname())
+          .imageUrl(userEntity.getImageUrl())
+          .build();
+
+      redisComponent.saveUserDTO(principal.getName(), userDTO);
+    }
 
     return MessageDTO.<UserDTO>builder()
         .type("user")
         .responseBody(userDTO)
         .build();
+  }
+
+  @Override
+  public MessageDTO<UserDTO> sendLeaveInfo(Principal principal) {
+
+    UserDTO userDTO = redisComponent.getUserDTO(principal.getName());
+
+    if (userDTO == null) {
+      UserEntity userEntity = userRepository.findByUsername(principal.getName())
+          .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+      userDTO = UserDTO.builder()
+          .id(userEntity.getId())
+          .nickname(userEntity.getNickname())
+          .imageUrl(userEntity.getImageUrl())
+          .build();
+
+      redisComponent.saveUserDTO(principal.getName(), userDTO);
+    }
+
+    return MessageDTO.<UserDTO>builder()
+        .type("leave")
+        .responseBody(userDTO)
+        .build();
+  }
+
+  @Override
+  @Transactional
+  public synchronized void handleUserDisconnection(String sessionId) {
+
+    Principal principal = sessionPrincipals.get(sessionId);
+    sessionPrincipals.remove(sessionId);
+    UserEntity userEntity = userRepository.findByUsername(principal.getName())
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+    Optional<ChatroomUserEntity> optionalChatroomUserEntity = chatroomUserRepository.findByUserEntity(
+        userEntity);
+
+    if (optionalChatroomUserEntity.isEmpty()) {
+      return;
+    }
+    ChatroomUserEntity chatroomUserEntity = optionalChatroomUserEntity.get();
+
+    ChatroomEntity chatroomEntity = chatroomUserEntity.getChatroomEntity();
+    Long chatroomId = chatroomEntity.getId();
+    Long categoryId = chatroomEntity.getCategoryEntity().getId();
+
+    chatroomUserRepository.delete(chatroomUserEntity);
+    chatroomEntity.update(chatroomUserRepository.countByChatroomEntity(chatroomEntity));
+    simpMessagingTemplate.convertAndSend(
+        String.format("/topic/categories/%s/chatrooms/%s", categoryId, chatroomId),
+        sendLeaveInfo(principal)
+    );
+
+    if (chatroomEntity.getUserEntity().equals(userEntity)) {
+      simpMessagingTemplate.convertAndSend(
+          String.format("/topic/categories/%s/chatrooms/%s", categoryId, chatroomId),
+          MessageDTO.<String>builder()
+              .type("delete")
+              .responseBody("The creator has left the room.")
+              .build()
+      );
+      List<ChatroomUserEntity> chatroomUserEntities = chatroomUserRepository.findAllByChatroomEntity(
+          chatroomEntity);
+      chatroomUserRepository.deleteAll(chatroomUserEntities);
+      chatroomRepository.delete(chatroomEntity);
+    }
   }
 }
