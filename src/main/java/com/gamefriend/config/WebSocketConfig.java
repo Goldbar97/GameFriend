@@ -1,6 +1,7 @@
 package com.gamefriend.config;
 
 import com.gamefriend.component.JwtProvider;
+import com.gamefriend.security.Authenticator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +26,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
   private final JwtProvider jwtProvider;
+  private final Authenticator authenticator;
 
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -50,7 +52,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
           if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             String jwtToken = authorizationHeader.substring(7); // "Bearer " 이후의 JWT 토큰 추출
             if (jwtProvider.validateToken(jwtToken)) {
-              Authentication authentication = jwtProvider.getAuthentication(jwtToken);
+              Authentication authentication = authenticator.getAuthentication(
+                  jwtProvider.claim(jwtToken));
 
               accessor.setUser(authentication); // 사용자 정보를 설정
             }

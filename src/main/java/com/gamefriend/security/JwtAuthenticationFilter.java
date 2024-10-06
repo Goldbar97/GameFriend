@@ -2,7 +2,6 @@ package com.gamefriend.security;
 
 import com.gamefriend.component.JwtProvider;
 import com.gamefriend.exception.CustomException;
-import com.gamefriend.exception.ErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +21,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final String TOKEN_HEADER = "Authorization";
   private final String TOKEN_PREFIX = "Bearer ";
   private final JwtProvider jwtProvider;
+  private final Authenticator authenticator;
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -32,7 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     if (token != null) {
       try {
         if (jwtProvider.validateToken(token)) {
-          Authentication authentication = jwtProvider.getAuthentication(token);
+          Authentication authentication = authenticator.getAuthentication(jwtProvider.claim(token));
           SecurityContextHolder.getContext().setAuthentication(authentication);
         }
       } catch (CustomException e) {
