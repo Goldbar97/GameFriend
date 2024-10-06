@@ -1,26 +1,21 @@
 package com.gamefriend.component;
 
-import com.gamefriend.security.CustomUserDetails;
 import com.gamefriend.type.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import javax.crypto.SecretKey;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class JwtProvider {
 
   @Value("${jwt.secret.key}")
@@ -70,23 +65,12 @@ public class JwtProvider {
     return false;
   }
 
-  public Authentication getAuthentication(String token) {
+  public Claims claim(String token) {
 
-    log.info("Starting getAuthentication");
-
-    Claims claims = Jwts.parserBuilder()
+    return Jwts.parserBuilder()
         .setSigningKey(secretKey)
         .build()
         .parseClaimsJws(token)
         .getBody();
-
-    String email = claims.getSubject();
-    String role = claims.get("role", String.class);
-    List<SimpleGrantedAuthority> roles = Collections.singletonList(
-        new SimpleGrantedAuthority(role));
-
-    UserDetails userDetails = new CustomUserDetails(email, roles);
-
-    return new UsernamePasswordAuthenticationToken(userDetails, null, roles);
   }
 }
