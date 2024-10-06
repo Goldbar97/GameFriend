@@ -23,7 +23,9 @@ function renderCategoryList(categories) {
 
 // 전체 카테고리 가져오기
 function fetchCategories() {
-  fetch('http://localhost:8080/api/categories')
+  fetch('http://localhost:8080/api/categories', {
+    method: 'GET'
+  })
   .then(response => response.json())
   .then(data => {
     const categories = data.responseBody;  // API 응답의 responseBody 리스트로 접근

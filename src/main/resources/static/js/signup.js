@@ -59,16 +59,24 @@ function signUp() {
   })
   .then(response => {
     if (!response.ok) {
-      throw new Error('회원가입 실패');
+      // response.json() 자체가 비동기 작업이므로 .then()으로 처리해야 함
+      return response.json().then(body => {
+        const responseBody = body.responseBody;
+        let alertMessage = '';
+        for (const [key, value] of Object.entries(responseBody)) {
+          alertMessage += `${key}: ${value}\n`;
+        }
+        alert(alertMessage);
+        throw new Error('회원가입 실패');
+      });
+    } else {
+      alert('회원가입을 축하드립니다.');
+      window.location.href = 'signin.html';
     }
-    alert('회원가입을 축하드립니다.');
   })
   .catch(error => {
     console.error('Error:', error);
-    alert('회원가입에 실패했습니다.');
-  })
-
-  window.location.href = 'signin.html';
+  });
 }
 
 function validatePassword(password, passwordVerify, passwordHelp) {

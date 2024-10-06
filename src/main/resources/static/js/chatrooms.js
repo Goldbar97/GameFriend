@@ -63,11 +63,54 @@ function renderChatrooms(categoryId, chatrooms) {
           <!-- 배지와 버튼을 감싸는 컨테이너 -->
       <div class="d-flex align-items-center">
         <span class="badge bg-primary rounded-pill me-3">${chatroom.present}/${chatroom.capacity}</span>
-        <a href="chatroom.html?categoryId=${categoryId}&chatroomId=${chatroom.id}" class="btn btn-outline-primary">입장</a>
+        <button type="button" onclick="enterChatroom(${categoryId}, ${chatroom.id})" class="btn btn-outline-primary">입장</button>
       </div>
     `;
     chatroomList.appendChild(listItem);
   });
+}
+
+function enterChatroom(categoryId, chatroomId) {
+  const token = sessionStorage.getItem('token');
+
+  if (!token) {
+    alert('로그인이 필요한 서비스입니다.');
+    window.location.href = 'signin.html';
+  }
+
+  fetch(`/api/categories/${categoryId}/chatrooms/${chatroomId}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    const chatroom = data.responseBody;
+    const present = chatroom.present;
+    const capacity = chatroom.capacity;
+
+    if (present < capacity) {
+      fetch(`/api/categories/${categoryId}/chatrooms/${chatroomId}/enter`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          window.location.href = `chatroom.html?categoryId=${categoryId}&chatroomId=${chatroomId}`;
+        } else {
+          alert('채팅방에 접속할 수 없습니다.');
+        }
+      })
+      .catch(error => {
+        console.error('입장 중 오류 발생:', error);
+      })
+    } else {
+      alert('채팅방 인원이 가득 찼습니다.');
+    }
+  })
 }
 
 document.addEventListener('DOMContentLoaded', function () {

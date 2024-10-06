@@ -4,9 +4,11 @@ let chatroomId = null;
 let token = null;
 let chatBox = null;
 let stompClient = null;
+let listGroup = null;
+let socket = null;
 
 function wsConnect() {
-  const socket = new SockJS('/ws/chat');  // WebSocket 엔드포인트
+  socket = new SockJS('/ws/chat');  // WebSocket 엔드포인트
   stompClient = Stomp.over(socket);
 
   // WebSocket 연결 설정
@@ -14,39 +16,54 @@ function wsConnect() {
       {Authorization: `Bearer ${token}`},  // JWT 토큰을 Authorization 헤더에 포함
       (frame) => {
         console.log('STOMP 연결 성공');
-
         // 채팅방 구독 (서버에서 인증이 완료된 후 메시지를 받을 수 있음)
         stompClient.subscribe(
             `/topic/categories/${categoryId}/chatrooms/${chatroomId}`,
             (message) => {
               const messageBody = JSON.parse(message.body);
 
-              const nickname = messageBody.nickname;
-              const imageUrl = messageBody.imageUrl
-                  ?? 'src/default-profile-image.png';
-              const chatMessage = messageBody.message;
-              const createdAt = messageBody.createdAt;
-
-              const messageElement = document.createElement('div');
-              messageElement.classList.add('message');
-              messageElement.innerHTML = `
-                <div class="d-flex align-items-start mb-3">
-                  <img src="${imageUrl}" alt="Profile Image" class="rounded-circle me-3 profile-image">
-                  <div class="flex-grow-1">
-                    <div class="d-flex justify-content-between">
-                      <strong>${nickname}</strong>
-                      <small class="text-muted">${new Date(
-                  createdAt).toLocaleString()}</small>
-                    </div>
-                    <div class="bg-light p-2 rounded border mt-1">
-                      ${chatMessage}
-                    </div>
+              if (messageBody.type === 'chat') {
+                const responseBody = messageBody.responseBody;
+                const nickname = responseBody.nickname;
+                const imageUrl = responseBody.imageUrl;
+                const chatMessage = responseBody.message;
+                const createdAt = responseBody.createdAt;
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                messageElement.innerHTML = `
+              <div class="d-flex align-items-start mb-3">
+                <img src="${imageUrl}" alt="Profile Image" class="rounded-circle me-3 profile-image">
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between">
+                    <strong>${nickname}</strong>
+                    <small class="text-muted">${new Date(
+                    createdAt).toLocaleString()}</small>
+                  </div>
+                  <div class="bg-light p-2 rounded border mt-1">
+                    ${chatMessage}
                   </div>
                 </div>
-              `;
-              chatBox.appendChild(messageElement);
-              chatBox.scrollTop = chatBox.scrollHeight; // 스크롤 하단으로 이동
-            });
+              </div>
+            `;
+                chatBox.appendChild(messageElement);
+                chatBox.scrollTop = chatBox.scrollHeight; // 스크롤 하단으로 이동
+              } else if (messageBody.type === 'user') {
+                const responseBody = messageBody.responseBody;
+                const id = responseBody.id;
+                const nickname = responseBody.nickname;
+                const imageUrl = responseBody.imageUrl;
+                addParticipantToList(id, nickname, imageUrl);
+              } else if (messageBody.type === 'delete') {
+                alert('방장이 나갔습니다. 방을 나갑니다.');
+                window.location.href = 'index.html';
+              } else if (messageBody.type === 'leave') {
+                const responseBody = messageBody.responseBody;
+                const id = responseBody.id;
+                removeParticipantToList(id);
+              }
+            }
+        );
+        sendParticipant();
       },
       (error) => {
         console.error('STOMP 연결 실패', error);
@@ -63,14 +80,21 @@ function handleKeyDown(event) {
 function sendMessage() {
   const message = document.getElementById('messageInput').value;
   if (message.trim()) {
-    stompClient.send(`/app/categories/${categoryId}/chatrooms/${chatroomId}`,
+    stompClient.send(
+        `/app/categories/${categoryId}/chatrooms/${chatroomId}/chat`,
         {}, message);
     messageInput.value = ""; // 입력란 초기화
   }
 }
 
 function sendParticipant() {
+  stompClient.send(
+      `/app/categories/${categoryId}/chatrooms/${chatroomId}/user`, {});
+}
 
+function sendLeave() {
+  stompClient.send(
+      `/app/categories/${categoryId}/chatrooms/${chatroomId}/leave`, {});
 }
 
 function confirmLeave() {
@@ -79,26 +103,53 @@ function confirmLeave() {
   }
 }
 
-function leaveChatroom() {
-  const xhr = new XMLHttpRequest();
-  xhr.open('DELETE',
-      `/api/categories/${categoryId}/chatrooms/${chatroomId}/leave`, false);
-  xhr.setRequestHeader('Content-Type', 'application/json');
-  xhr.setRequestHeader('Authorization', `Bearer ${token}`)
-  xhr.send();
+function disconnectWebSocket() {
+  if (stompClient !== null) {
+    stompClient.disconnect(() => {
+      console.log('WebSocket Disconnected');
+    });
+  }
+}
 
+function leaveChatroom() {
+  sendLeave();
+  disconnectWebSocket();
   window.location.href = 'index.html';
 }
 
-function addParticipantToList(listGroup, nickname) {
+function addParticipantToList(id, nickname, imageUrl) {
+  const listItems = document.querySelectorAll('.list-group-item');
+
+  const isDuplicate = Array.from(listItems).some(
+      item => item.getAttribute('data-id') === String(id));
+
+  if (isDuplicate) {
+    return;  // 중복된 경우 함수 종료
+  }
+
   const groupItem = document.createElement('li');
   groupItem.classList.add('list-group-item');
-  groupItem.textContent = nickname;
+  groupItem.setAttribute('data-id', id);
+  groupItem.innerHTML = `
+    <div class="d-flex align-items-center">
+      <img src="${imageUrl}" alt="${nickname}'s profile image" class="rounded-circle small-profile-image me-2">
+      ${nickname}
+    </div>
+  `;
   listGroup.appendChild(groupItem);
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-  // 입장 메시지 설정 (백엔드에서 데이터를 받아와 설정)
+function removeParticipantToList(id) {
+  const listItems = document.querySelectorAll('.list-group-item');
+
+  listItems.forEach(item => {
+    if (item.getAttribute('data-id') === String(id)) {
+      item.remove();
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', async function () {
   urlParam = new URLSearchParams(window.location.search);
   categoryId = urlParam.get('categoryId');
   chatroomId = urlParam.get('chatroomId');
@@ -110,7 +161,21 @@ document.addEventListener('DOMContentLoaded', function () {
     window.location.href = 'signin.html';
   }
 
-  fetch(
+  const firstResponse = await fetch(
+      `/api/categories/${categoryId}/chatrooms/${chatroomId}/check-user`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+  );
+  if (!firstResponse.ok) {
+    alert('잘못된 입장입니다.');
+    window.location.href = 'index.html';
+    return;
+  }
+
+  const secondResponse = await fetch(
       `http://localhost:8080/api/categories/${categoryId}/chatrooms/${chatroomId}`,
       {
         method: 'GET',
@@ -118,37 +183,66 @@ document.addEventListener('DOMContentLoaded', function () {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         }
-      })
-  .then(response => {
-    if (response.status === 404) {
-      alert('존재하지 않는 채팅방입니다.');
-      window.location.href = 'index.html';
-    }
+      }
+  );
+  if (secondResponse.status === 404) {
+    alert('존재하지 않는 채팅방입니다.');
+    window.location.href = 'index.html';
+  }
+  const data2 = await secondResponse.json();
+  const chatroom = data2.responseBody;
+  const chatroomName = chatroom.title;
+  const entranceMessage = chatroom.entranceMessage;
+  document.getElementById('chatroomName').textContent = chatroomName;
+  document.getElementById('entranceMessage').textContent = entranceMessage;
 
-    return response.json();
-  })
-  .then(data => {
-    const chatroom = data.responseBody;
-    const chatroomName = chatroom.title;
-    const entranceMessage = chatroom.entranceMessage;
-
-    document.getElementById('chatroomName').textContent = chatroomName;
-    document.getElementById('entranceMessage').textContent = entranceMessage;
-  })
-
-  fetch(
+  const thirdResponse = await fetch(
       `http://localhost:8080/api/categories/${categoryId}/chatrooms/${chatroomId}/users`,
       {
         method: 'GET'
-      })
-  .then(response => response.json())
-  .then(data => {
-    const participants = data.responseBody;
-    const listGroup = document.getElementsByClassName('list-group').item(0);
-    participants.forEach(participant => {
-      addParticipantToList(listGroup, participant.nickname);
-    })
+      }
+  )
+  const data3 = await thirdResponse.json();
+  const participants = data3.responseBody;
+  listGroup = document.getElementsByClassName('list-group').item(0);
+  participants.forEach(participant => {
+    addParticipantToList(participant.id, participant.nickname,
+        participant.imageUrl);
   })
+
+  const fourthResponse = await fetch(
+      `http://localhost:8080/api/categories/${categoryId}/chatrooms/${chatroomId}/chat`,
+      {
+        method: 'GET'
+      }
+  )
+  const data4 = await fourthResponse.json();
+  const chats = data4.responseBody;
+  chats.forEach(chat => {
+    const nickname = chat.nickname;
+    const imageUrl = chat.imageUrl;
+    const message = chat.message;
+    const createdAt = chat.createdAt;
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message');
+    messageElement.innerHTML = `
+              <div class="d-flex align-items-start mb-3">
+                <img src="${imageUrl}" alt="Profile Image" class="rounded-circle me-3 profile-image">
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between">
+                    <strong>${nickname}</strong>
+                    <small class="text-muted">${new Date(
+        createdAt).toLocaleString()}</small>
+                  </div>
+                  <div class="bg-light p-2 rounded border mt-1">
+                    ${message}
+                  </div>
+                </div>
+              </div>
+            `;
+    chatBox.appendChild(messageElement);
+  })
+  chatBox.scrollTop = chatBox.scrollHeight; // 스크롤 하단으로 이동
 
   wsConnect();
 });
