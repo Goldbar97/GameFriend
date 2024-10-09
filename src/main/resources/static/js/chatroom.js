@@ -149,7 +149,7 @@ function removeParticipantToList(id) {
   });
 }
 
-document.addEventListener('DOMContentLoaded', async function () {
+document.addEventListener('DOMContentLoaded', function () {
   urlParam = new URLSearchParams(window.location.search);
   categoryId = urlParam.get('categoryId');
   chatroomId = urlParam.get('chatroomId');
@@ -161,78 +161,47 @@ document.addEventListener('DOMContentLoaded', async function () {
     window.location.href = 'signin.html';
   }
 
-  const firstResponse = await fetch(
-      `/api/categories/${categoryId}/chatrooms/${chatroomId}/check-user`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      }
-  );
-  if (!firstResponse.ok) {
-    alert('잘못된 입장입니다.');
-    window.location.href = 'index.html';
-    return;
-  }
-
-  const secondResponse = await fetch(
-      `http://localhost:8080/api/categories/${categoryId}/chatrooms/${chatroomId}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      }
-  );
-  if (secondResponse.status === 404) {
-    alert('존재하지 않는 채팅방입니다.');
-    window.location.href = 'index.html';
-  }
-  const data2 = await secondResponse.json();
-  const chatroom = data2.responseBody;
-  const chatroomName = chatroom.title;
-  const entranceMessage = chatroom.entranceMessage;
-  document.getElementById('chatroomName').textContent = chatroomName;
-  document.getElementById('entranceMessage').textContent = entranceMessage;
-
-  const thirdResponse = await fetch(
-      `http://localhost:8080/api/categories/${categoryId}/chatrooms/${chatroomId}/users`,
-      {
-        method: 'GET'
-      }
-  )
-  const data3 = await thirdResponse.json();
-  const participants = data3.responseBody;
-  listGroup = document.getElementsByClassName('list-group').item(0);
-  participants.forEach(participant => {
-    addParticipantToList(participant.id, participant.nickname,
-        participant.imageUrl);
+  fetch(`/api/categories/${categoryId}/chatrooms/${chatroomId}/details`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
   })
-
-  const fourthResponse = await fetch(
-      `http://localhost:8080/api/categories/${categoryId}/chatrooms/${chatroomId}/chat`,
-      {
-        method: 'GET'
-      }
-  )
-  const data4 = await fourthResponse.json();
-  const chats = data4.responseBody;
-  chats.forEach(chat => {
-    const nickname = chat.nickname;
-    const imageUrl = chat.imageUrl;
-    const message = chat.message;
-    const createdAt = chat.createdAt;
-    const messageElement = document.createElement('div');
-    messageElement.classList.add('message');
-    messageElement.innerHTML = `
+  .then(response => {
+    if (!response.ok) {
+      alert('잘못된 접근입니다.');
+      window.location.href = 'index.html';
+    }
+    return response.json();
+  })
+  .then(data => {
+    const details = data.responseBody;
+    const chatroomName = details.title;
+    const entranceMessage = details.entranceMessage;
+    const participants = details.users;
+    const chats = details.chats;
+    document.getElementById('chatroomName').textContent = chatroomName;
+    document.getElementById('entranceMessage').textContent = entranceMessage;
+    listGroup = document.getElementsByClassName('list-group').item(0);
+    participants.forEach(participant => {
+      addParticipantToList(participant.id, participant.nickname,
+          participant.imageUrl);
+    });
+    chats.forEach(chat => {
+      const nickname = chat.nickname;
+      const imageUrl = chat.imageUrl;
+      const message = chat.message;
+      const createdAt = chat.createdAt;
+      const messageElement = document.createElement('div');
+      messageElement.classList.add('message');
+      messageElement.innerHTML = `
               <div class="d-flex align-items-start mb-3">
                 <img src="${imageUrl}" alt="Profile Image" class="rounded-circle me-3 profile-image">
                 <div class="flex-grow-1">
                   <div class="d-flex justify-content-between">
                     <strong>${nickname}</strong>
                     <small class="text-muted">${new Date(
-        createdAt).toLocaleString()}</small>
+          createdAt).toLocaleString()}</small>
                   </div>
                   <div class="bg-light p-2 rounded border mt-1">
                     ${message}
@@ -240,9 +209,9 @@ document.addEventListener('DOMContentLoaded', async function () {
                 </div>
               </div>
             `;
-    chatBox.appendChild(messageElement);
+      chatBox.appendChild(messageElement);
+    })
+    chatBox.scrollTop = chatBox.scrollHeight; // 스크롤 하단으로 이동
+    wsConnect();
   })
-  chatBox.scrollTop = chatBox.scrollHeight; // 스크롤 하단으로 이동
-
-  wsConnect();
 });

@@ -36,11 +36,15 @@ function signIn(event) {
     return response.json();
   })
   .then(data => {
-    const token = data.responseBody;
+    const responseBody = data.responseBody;
+    const userDTO = responseBody.userDTO;
+    const imageUrl = userDTO.imageUrl;
+    const token = responseBody.token;
     const expirationTime = Date.now() + 3600000;
 
     sessionStorage.setItem('token', token);
     sessionStorage.setItem('expirationTime', expirationTime);
+    sessionStorage.setItem('imageUrl', imageUrl);
 
     window.location.href = 'index.html';
   })

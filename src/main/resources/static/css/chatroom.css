@@ -4,6 +4,7 @@
   flex-direction: row;
   margin-bottom: 85px;
 }
+
 /* 채팅 메시지 영역 */
 .chat-messages {
   flex-grow: 1;
@@ -13,6 +14,7 @@
   border-right: 1px solid #ccc;
   background-color: #f9f9f9;
 }
+
 /* 메시지 입력 영역 */
 .message-input {
   display: flex;
@@ -21,6 +23,7 @@
   border-top: 1px solid #ccc;
   background-color: white;
 }
+
 /* 참여자 목록 */
 .participants-list {
   width: 250px;
@@ -29,16 +32,20 @@
   border-left: 1px solid #ccc;
   overflow-y: auto;
 }
+
 .message {
   margin-bottom: 10px;
 }
+
 .message .username {
   font-weight: bold;
 }
+
 .message .timestamp {
   font-size: 0.8em;
   color: gray;
 }
+
 .small-profile-image {
   width: 30px;
   height: 30px;

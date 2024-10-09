@@ -1,5 +1,5 @@
 function isCheckedDupe() {
-  return
+
 }
 
 function checkDupe() {

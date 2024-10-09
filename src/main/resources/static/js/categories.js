@@ -6,7 +6,8 @@ function renderCategoryList(categories) {
   // 카테고리 리스트 생성
   categories.forEach(category => {
     const listItem = document.createElement('li');
-    listItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
+    listItem.classList.add('list-group-item', 'd-flex',
+        'justify-content-between', 'align-items-center');
     listItem.innerHTML = `
       <a href="chatrooms.html?categoryId=${category.id}&categoryName=${category.name}" class="category-link text-decoration-none">
         <h5>${category.name}</h5>
@@ -39,7 +40,8 @@ function searchCategory() {
   const searchTerm = document.getElementById('categorySearch').value;
 
   // 서버로 검색 요청
-  fetch(`http://localhost:8080/api/categories/search?query=${encodeURIComponent(searchTerm)}`)
+  fetch(`http://localhost:8080/api/categories/search?query=${encodeURIComponent(
+      searchTerm)}`)
   .then(response => response.json())
   .then(data => {
     const categories = data.responseBody;

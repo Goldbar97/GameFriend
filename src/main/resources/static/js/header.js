@@ -12,8 +12,15 @@ function setNavbar() {
   if (isLoggedIn()) {
     fetch('header-logged-in.html')
       .then(response => response.text())
-      .then(data => {
-        navbar.innerHTML = data;
+      .then(navbarHtml => {
+        navbar.innerHTML = navbarHtml;
+        const imageUrl = sessionStorage.getItem('imageUrl');
+
+        // 프로필 이미지 요소를 선택하고 src 속성 변경
+        const profileImage = navbar.querySelector('.profile-image');
+        if (profileImage) {
+          profileImage.src = imageUrl;
+        }
       })
       .catch(error => console.error('Error loading header:', error))
   } else {
@@ -24,7 +31,6 @@ function setNavbar() {
     })
     .catch(error => console.error('Error loading header:', error))
   }
-
 }
 
 document.addEventListener('DOMContentLoaded', setNavbar);

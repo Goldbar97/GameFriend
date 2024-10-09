@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   const token = sessionStorage.getItem('token');
   const expirationTime = sessionStorage.getItem('expirationTime');
 
