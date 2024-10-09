@@ -1,8 +1,7 @@
 package com.gamefriend.controller;
 
-import com.gamefriend.dto.ChatDTO;
 import com.gamefriend.dto.ChatroomDTO;
-import com.gamefriend.dto.UserDTO;
+import com.gamefriend.dto.ChatroomDetailsDTO;
 import com.gamefriend.response.ApiResponse;
 import com.gamefriend.response.ApiResponseBody;
 import com.gamefriend.service.ChatroomService;
@@ -67,15 +66,6 @@ public class ChatroomController {
     return ResponseEntity.ok(ApiResponseBody.okBody(chatRooms));
   }
 
-  @GetMapping("/api/categories/{categoryId}/chatrooms/{chatroomId}/users")
-  public ResponseEntity<ApiResponseBody<List<UserDTO>>> getChatroomUsers(
-      @PathVariable("categoryId") Long categoryId, @PathVariable("chatroomId") Long chatroomId) {
-
-    List<UserDTO> userDTOs = chatroomService.getChatroomUsers(categoryId,
-        chatroomId);
-    return ResponseEntity.ok(ApiResponseBody.okBody(userDTOs));
-  }
-
   @PutMapping("/api/categories/{categoryId}/chatrooms/{chatroomId}")
   public ResponseEntity<ApiResponse> updateChatRoom(
       @AuthenticationPrincipal UserDetails userDetails, @PathVariable("categoryId") Long categoryId,
@@ -86,19 +76,13 @@ public class ChatroomController {
     return ResponseEntity.ok(ApiResponse.ok());
   }
 
-  @GetMapping("/api/categories/{categoryId}/chatrooms/{chatroomId}/check-user")
-  public ResponseEntity<ApiResponse> checkUser(@AuthenticationPrincipal UserDetails userDetails,
-      @PathVariable("categoryId") Long categoryId, @PathVariable("chatroomId") Long chatroomId) {
+  @GetMapping("/api/categories/{categoryId}/chatrooms/{chatroomId}/details")
+  public ResponseEntity<ApiResponseBody<ChatroomDetailsDTO>> getChatroomDetails(
+      @AuthenticationPrincipal UserDetails userDetails, @PathVariable("categoryId") Long categoryId,
+      @PathVariable("chatroomId") Long chatroomId) {
 
-    chatroomService.checkUser(userDetails, categoryId, chatroomId);
-    return ResponseEntity.ok(ApiResponse.ok());
-  }
-
-  @GetMapping("/api/categories/{categoryId}/chatrooms/{chatroomId}/chat")
-  public ResponseEntity<ApiResponseBody<List<ChatDTO>>> getChat(
-      @PathVariable("categoryId") Long categoryId, @PathVariable("chatroomId") Long chatroomId) {
-
-    List<ChatDTO> chatDTOs = chatroomService.getChat(categoryId, chatroomId);
-    return ResponseEntity.ok(ApiResponseBody.okBody(chatDTOs));
+    ChatroomDetailsDTO chatroomDetails = chatroomService.getChatroomDetails(userDetails, categoryId,
+        chatroomId);
+    return ResponseEntity.ok(ApiResponseBody.okBody(chatroomDetails));
   }
 }

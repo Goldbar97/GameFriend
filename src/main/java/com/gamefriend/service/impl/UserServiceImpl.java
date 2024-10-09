@@ -4,6 +4,7 @@ import com.gamefriend.component.JwtProvider;
 import com.gamefriend.component.RedisComponent;
 import com.gamefriend.dto.PasswordDTO;
 import com.gamefriend.dto.SignInDTO;
+import com.gamefriend.dto.SignInSuccessDTO;
 import com.gamefriend.dto.SignUpDTO;
 import com.gamefriend.dto.UserDTO;
 import com.gamefriend.dto.UsernameDTO;
@@ -55,7 +56,7 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional
-  public String signIn(SignInDTO SignInDTO) {
+  public SignInSuccessDTO signIn(SignInDTO SignInDTO) {
 
     UserEntity userEntity = userRepository.findByUsername(SignInDTO.getUsername())
         .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -68,12 +69,18 @@ public class UserServiceImpl implements UserService {
     }
     redisComponent.signInSuccess(username);
 
-    redisComponent.saveUserDTO(username, UserDTO.builder()
+    UserDTO userDTO = UserDTO.builder()
         .id(userEntity.getId())
         .nickname(userEntity.getNickname())
         .imageUrl(userEntity.getImageUrl())
-        .build());
-    return jwtProvider.generateToken(username, role);
+        .build();
+
+    redisComponent.saveUserDTO(username, userDTO);
+
+    return SignInSuccessDTO.builder()
+        .token(jwtProvider.generateToken(username, role))
+        .userDTO(userDTO)
+        .build();
   }
 
   @Override

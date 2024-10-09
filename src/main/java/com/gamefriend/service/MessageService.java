@@ -7,7 +7,8 @@ import java.security.Principal;
 
 public interface MessageService {
 
-  MessageDTO<ChatDTO> sendMessage(Principal principal, Long categoryId, Long chatroomId, String message);
+  MessageDTO<ChatDTO> sendMessage(Principal principal, Long categoryId, Long chatroomId,
+      String message);
 
   MessageDTO<UserDTO> sendUserInfo(Principal principal, String sessionId);
 

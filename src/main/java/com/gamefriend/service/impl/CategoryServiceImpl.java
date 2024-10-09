@@ -8,7 +8,6 @@ import com.gamefriend.exception.ErrorCode;
 import com.gamefriend.repository.CategoryRepository;
 import com.gamefriend.service.CategoryService;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,7 +49,7 @@ public class CategoryServiceImpl implements CategoryService {
             .participants(e.getParticipants())
             .build()
         )
-        .collect(Collectors.toList());
+        .toList();
   }
 
   @Override

@@ -4,9 +4,9 @@ import com.gamefriend.component.RedisComponent;
 import com.gamefriend.dto.ChatDTO;
 import com.gamefriend.dto.MessageDTO;
 import com.gamefriend.dto.UserDTO;
+import com.gamefriend.entity.ChatEntity;
 import com.gamefriend.entity.ChatroomEntity;
 import com.gamefriend.entity.ChatroomUserEntity;
-import com.gamefriend.entity.ChatEntity;
 import com.gamefriend.entity.UserEntity;
 import com.gamefriend.exception.CustomException;
 import com.gamefriend.exception.ErrorCode;
@@ -120,7 +120,7 @@ public class MessageServiceImpl implements MessageService {
 
   @Override
   @Transactional
-  public synchronized void handleUserDisconnection(String sessionId) {
+  public void handleUserDisconnection(String sessionId) {
 
     Principal principal = sessionPrincipals.get(sessionId);
     sessionPrincipals.remove(sessionId);
@@ -135,7 +135,8 @@ public class MessageServiceImpl implements MessageService {
     }
     ChatroomUserEntity chatroomUserEntity = optionalChatroomUserEntity.get();
 
-    ChatroomEntity chatroomEntity = chatroomUserEntity.getChatroomEntity();
+    ChatroomEntity chatroomEntity = chatroomRepository.findByChatroomUserIdWithLock(
+        chatroomUserEntity.getId()).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
     Long chatroomId = chatroomEntity.getId();
     Long categoryId = chatroomEntity.getCategoryEntity().getId();
 

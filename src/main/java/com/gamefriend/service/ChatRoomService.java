@@ -1,8 +1,7 @@
 package com.gamefriend.service;
 
-import com.gamefriend.dto.ChatDTO;
 import com.gamefriend.dto.ChatroomDTO;
-import com.gamefriend.dto.UserDTO;
+import com.gamefriend.dto.ChatroomDetailsDTO;
 import java.util.List;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -16,14 +15,10 @@ public interface ChatroomService {
 
   List<ChatroomDTO> searchChatrooms(Long categoryId, String query);
 
-  List<UserDTO> getChatroomUsers(Long categoryId, Long chatroomId);
-
   void enterChatRoom(UserDetails userDetails, Long categoryId, Long chatroomId);
 
   void updateChatRoom(UserDetails userDetails, Long categoryId, Long chatroomId,
       ChatroomDTO chatRoomDTO);
 
-  void checkUser(UserDetails userDetails, Long categoryId, Long chatroomId);
-
-  List<ChatDTO> getChat(Long categoryId, Long chatroomId);
+  ChatroomDetailsDTO getChatroomDetails(UserDetails userDetails, Long categoryId, Long chatroomId);
 }

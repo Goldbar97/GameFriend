@@ -3,9 +3,7 @@ package com.gamefriend.entity;
 import com.gamefriend.dto.ChatroomDTO;
 import com.gamefriend.exception.CustomException;
 import com.gamefriend.exception.ErrorCode;
-import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
-import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -44,8 +42,13 @@ public class ChatroomEntity extends BaseEntity {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof UserEntity user)) return false;
+
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof UserEntity user)) {
+      return false;
+    }
     return id != null && id.equals(user.getId());
   }
 

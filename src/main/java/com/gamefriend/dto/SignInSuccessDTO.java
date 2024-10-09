@@ -1,13 +1,16 @@
 package com.gamefriend.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
-@NoArgsConstructor
+@Builder
 @Getter
-public class UsernameDTO {
+@NoArgsConstructor
+public class SignInSuccessDTO {
 
-  private String username;
+  private String token;
+  private UserDTO userDTO;
 }

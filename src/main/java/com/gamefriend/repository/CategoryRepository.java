@@ -17,10 +17,12 @@ public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> 
   @Query(value = "SELECT * FROM CATEGORY WHERE MATCH(name) AGAINST(:query IN BOOLEAN MODE)", nativeQuery = true)
   List<CategoryEntity> findByQuery(@Param("query") String query);
 
-  @Query("SELECT new com.gamefriend.dto.CategoryStatsDTO(c.id, c.name, COUNT(cr), COALESCE(SUM(cr.present), 0)) " +
-      "FROM CATEGORY c " +
-      "LEFT JOIN CHATROOM cr ON cr.categoryEntity = c " +
-      "GROUP BY c.id " +
-      "ORDER BY SUM(cr.present) DESC")
+  @Query(
+      "SELECT new com.gamefriend.dto.CategoryStatsDTO(c.id, c.name, COUNT(cr), COALESCE(SUM(cr.present), 0)) "
+          +
+          "FROM CATEGORY c " +
+          "LEFT JOIN CHATROOM cr ON cr.categoryEntity = c " +
+          "GROUP BY c.id " +
+          "ORDER BY SUM(cr.present) DESC")
   List<CategoryStatsDTO> findCategoryStats();
 }
