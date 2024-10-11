@@ -18,7 +18,7 @@ function setNavbar() {
 
         // 프로필 이미지 요소를 선택하고 src 속성 변경
         const profileImage = navbar.querySelector('.profile-image');
-        if (profileImage) {
+        if (profileImage && imageUrl) {
           profileImage.src = imageUrl;
         }
       })
