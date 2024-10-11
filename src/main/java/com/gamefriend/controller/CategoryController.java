@@ -2,6 +2,7 @@ package com.gamefriend.controller;
 
 import com.gamefriend.dto.CategoryDTO;
 import com.gamefriend.dto.CategoryStatsDTO;
+import com.gamefriend.entity.CategoryDocument;
 import com.gamefriend.response.ApiResponse;
 import com.gamefriend.response.ApiResponseBody;
 import com.gamefriend.service.CategoryService;
@@ -44,15 +45,15 @@ public class CategoryController {
   }
 
   @GetMapping("/api/categories")
-  public ResponseEntity<ApiResponseBody<List<CategoryStatsDTO>>> getCategories() {
+  public ResponseEntity<ApiResponseBody<List<CategoryDocument>>> getCategories() {
 
-    List<CategoryStatsDTO> categories = categoryService.getCategories();
+    List<CategoryDocument> categories = categoryService.getCategories();
     return ResponseEntity.ok(ApiResponseBody.okBody(categories));
   }
 
   @PreAuthorize("hasRole('ADMIN')")
   @PutMapping("/api/categories/{categoryId}")
-  public ResponseEntity<ApiResponse> updateCategory(@PathVariable Long categoryId,
+  public ResponseEntity<ApiResponse> updateCategory(@PathVariable("categoryId") Long categoryId,
       @Validated CategoryDTO categoryDTO) {
 
     categoryService.updateCategory(categoryId, categoryDTO);
@@ -61,7 +62,7 @@ public class CategoryController {
 
   @PreAuthorize("hasRole('ADMIN')")
   @DeleteMapping("/api/categories/{categoryId}")
-  public ResponseEntity<ApiResponse> deleteCategory(@PathVariable Long categoryId) {
+  public ResponseEntity<ApiResponse> deleteCategory(@PathVariable("categoryId") Long categoryId) {
 
     categoryService.deleteCategory(categoryId);
     return ResponseEntity.ok(ApiResponse.ok());

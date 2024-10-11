@@ -1,14 +1,20 @@
 package com.gamefriend.service.impl;
 
+import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import com.gamefriend.dto.CategoryDTO;
 import com.gamefriend.dto.CategoryStatsDTO;
+import com.gamefriend.entity.CategoryDocument;
 import com.gamefriend.entity.CategoryEntity;
 import com.gamefriend.exception.CustomException;
 import com.gamefriend.exception.ErrorCode;
+import com.gamefriend.repository.CategoryDocumentRepository;
 import com.gamefriend.repository.CategoryRepository;
 import com.gamefriend.service.CategoryService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
+import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CategoryServiceImpl implements CategoryService {
 
   private final CategoryRepository categoryRepository;
+  private final CategoryDocumentRepository categoryDocumentRepository;
 
   @Override
   @Transactional
@@ -32,16 +39,26 @@ public class CategoryServiceImpl implements CategoryService {
         .participants(0)
         .build();
 
-    categoryRepository.save(categoryEntity);
+    CategoryEntity saved = categoryRepository.save(categoryEntity);
+
+    CategoryDocument categoryDocument = CategoryDocument.builder()
+        .id(saved.getId())
+        .name(saved.getName())
+        .rooms(0)
+        .participants(0)
+        .build();
+
+    categoryDocumentRepository.save(categoryDocument);
   }
 
   @Override
   @Transactional(readOnly = true)
   public List<CategoryDTO> searchCategories(String query) {
 
-    List<CategoryEntity> categoryEntities = categoryRepository.findByQuery(query);
+    List<CategoryDocument> categoryDocuments = categoryDocumentRepository.findByNameContaining(
+        query);
 
-    return categoryEntities.stream()
+    return categoryDocuments.stream()
         .map(e -> CategoryDTO.builder()
             .id(e.getId())
             .name(e.getName())
@@ -54,9 +71,9 @@ public class CategoryServiceImpl implements CategoryService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<CategoryStatsDTO> getCategories() {
+  public List<CategoryDocument> getCategories() {
 
-    return categoryRepository.findCategoryStats();
+    return categoryDocumentRepository.findAllByOrderByParticipantsDesc();
   }
 
   @Override
@@ -67,6 +84,12 @@ public class CategoryServiceImpl implements CategoryService {
         .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
     categoryEntity.update(categoryDTO.getName());
+
+    CategoryDocument categoryDocument = categoryDocumentRepository.findById(categoryId)
+        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+    categoryDocument.updateName(categoryDTO.getName());
+    categoryDocumentRepository.save(categoryDocument);
   }
 
   @Override
@@ -77,5 +100,10 @@ public class CategoryServiceImpl implements CategoryService {
         .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
     categoryRepository.delete(categoryEntity);
+
+    CategoryDocument categoryDocument = categoryDocumentRepository.findById(categoryId)
+        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+    categoryDocumentRepository.delete(categoryDocument);
   }
 }

@@ -5,6 +5,7 @@ import com.gamefriend.dto.ChatroomDTO;
 import com.gamefriend.dto.ChatroomDetailsDTO;
 import com.gamefriend.dto.UserDTO;
 import com.gamefriend.entity.CategoryEntity;
+import com.gamefriend.entity.ChatroomDocument;
 import com.gamefriend.entity.ChatroomEntity;
 import com.gamefriend.entity.ChatroomUserEntity;
 import com.gamefriend.entity.UserEntity;
@@ -12,6 +13,7 @@ import com.gamefriend.exception.CustomException;
 import com.gamefriend.exception.ErrorCode;
 import com.gamefriend.repository.CategoryRepository;
 import com.gamefriend.repository.ChatRepository;
+import com.gamefriend.repository.ChatroomDocumentRepository;
 import com.gamefriend.repository.ChatroomRepository;
 import com.gamefriend.repository.ChatroomUserRepository;
 import com.gamefriend.repository.UserRepository;
@@ -28,6 +30,7 @@ public class ChatroomServiceImpl implements ChatroomService {
 
   private final CategoryRepository categoryRepository;
   private final ChatRepository chatRepository;
+  private final ChatroomDocumentRepository chatroomDocumentRepository;
   private final ChatroomRepository chatroomRepository;
   private final ChatroomUserRepository chatroomUserRepository;
   private final UserRepository userRepository;
@@ -58,6 +61,20 @@ public class ChatroomServiceImpl implements ChatroomService {
         .build();
 
     ChatroomEntity saved = chatroomRepository.save(chatroomEntity);
+
+    ChatroomDocument chatroomDocument = ChatroomDocument.builder()
+        .id(saved.getId())
+        .userId(userEntity.getId())
+        .categoryId(categoryId)
+        .title(saved.getTitle())
+        .createdBy(saved.getCreatedBy())
+        .present(saved.getPresent())
+        .capacity(saved.getCapacity())
+        .createdAt(saved.getCreatedAt())
+        .updatedAt(saved.getUpdatedAt())
+        .build();
+
+    chatroomDocumentRepository.save(chatroomDocument);
 
     // TODO: enter own chatroom
     enterChatRoom(userDetails, categoryId, saved.getId());
@@ -97,13 +114,10 @@ public class ChatroomServiceImpl implements ChatroomService {
   @Transactional(readOnly = true)
   public List<ChatroomDTO> getChatRooms(Long categoryId) {
 
-    CategoryEntity categoryEntity = categoryRepository.findById(categoryId)
-        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+    List<ChatroomDocument> chatroomDocuments = chatroomDocumentRepository.findByCategoryId(
+        categoryId);
 
-    List<ChatroomEntity> chatRoomEntities = chatroomRepository.findAllByCategoryEntity(
-        categoryEntity);
-
-    return chatRoomEntities.stream()
+    return chatroomDocuments.stream()
         .map(e ->
             ChatroomDTO.builder()
                 .id(e.getId())
@@ -120,16 +134,17 @@ public class ChatroomServiceImpl implements ChatroomService {
   @Override
   public List<ChatroomDTO> searchChatrooms(Long categoryId, String query) {
 
-    List<ChatroomEntity> chatRoomEntities = chatroomRepository.findByCategoryIdAndQuery(categoryId,
-        query);
+    List<ChatroomDocument> chatroomDocuments = chatroomDocumentRepository.findByCategoryIdAndTitleContaining(
+        categoryId, query);
 
-    return chatRoomEntities.stream()
+    return chatroomDocuments.stream()
         .map(e -> ChatroomDTO.builder()
+            .id(e.getId())
             .title(e.getTitle())
-            .capacity(e.getCapacity())
             .entranceMessage(e.getEntranceMessage())
-            .createdBy(e.getUserEntity().getUsername())
+            .createdBy(e.getCreatedBy())
             .present(e.getPresent())
+            .capacity(e.getCapacity())
             .createdAt(e.getCreatedAt())
             .updatedAt(e.getUpdatedAt())
             .build())
@@ -146,6 +161,9 @@ public class ChatroomServiceImpl implements ChatroomService {
     ChatroomEntity chatroomEntity = chatroomRepository.findByIdWithLock(chatroomId)
         .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
+    ChatroomDocument chatroomDocument = chatroomDocumentRepository.findById(chatroomId)
+        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
     if (chatroomEntity.getPresent() == chatroomEntity.getCapacity()) {
       throw new CustomException(ErrorCode.CHATROOM_FULL);
     }
@@ -157,6 +175,8 @@ public class ChatroomServiceImpl implements ChatroomService {
 
     chatroomUserRepository.save(chatRoomUserEntity);
     chatroomEntity.update(chatroomUserRepository.countByChatroomEntity(chatroomEntity));
+    chatroomDocument.updatePresent(chatroomEntity.getPresent());
+    chatroomDocumentRepository.save(chatroomDocument);
   }
 
   @Override
