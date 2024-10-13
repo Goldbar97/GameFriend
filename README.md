@@ -19,3 +19,18 @@
 ### Elasticsearch 를 활용한 부분검색
 ![5](https://github.com/user-attachments/assets/87f8da2c-951c-4c04-9e9e-feed41071a5d)
 ![6](https://github.com/user-attachments/assets/9779821c-642d-453a-9bdb-9cb8f6deb4e5)
+
+## ERD
+![7](https://github.com/user-attachments/assets/8f2b3b81-a441-4a4a-a0d2-f1110eba6059)
+
+## 기술
+- Java 17
+- Spring Boot
+- Spring Boot Data JPA
+- Spring Boot Data Redis
+- Spring Boot Data Elasticsearch
+- Spring Boot Web
+- Spring Boot WebSocket
+- Spring Boot Security
+- Json Web Token
+- MariaDB
