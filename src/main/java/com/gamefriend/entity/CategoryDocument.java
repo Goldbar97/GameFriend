@@ -31,4 +31,14 @@ public class CategoryDocument {
 
     this.name = name;
   }
+
+  public void updateRooms(long rooms) {
+
+    this.rooms = rooms;
+  }
+
+  public void updateParticipants(long participants) {
+
+    this.participants = participants;
+  }
 }

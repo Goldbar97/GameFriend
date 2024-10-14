@@ -4,6 +4,7 @@ import com.gamefriend.dto.ChatDTO;
 import com.gamefriend.dto.ChatroomDTO;
 import com.gamefriend.dto.ChatroomDetailsDTO;
 import com.gamefriend.dto.UserDTO;
+import com.gamefriend.entity.CategoryDocument;
 import com.gamefriend.entity.CategoryEntity;
 import com.gamefriend.entity.ChatroomDocument;
 import com.gamefriend.entity.ChatroomEntity;
@@ -11,6 +12,7 @@ import com.gamefriend.entity.ChatroomUserEntity;
 import com.gamefriend.entity.UserEntity;
 import com.gamefriend.exception.CustomException;
 import com.gamefriend.exception.ErrorCode;
+import com.gamefriend.repository.CategoryDocumentRepository;
 import com.gamefriend.repository.CategoryRepository;
 import com.gamefriend.repository.ChatRepository;
 import com.gamefriend.repository.ChatroomDocumentRepository;
@@ -28,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ChatroomServiceImpl implements ChatroomService {
 
+  private final CategoryDocumentRepository categoryDocumentRepository;
   private final CategoryRepository categoryRepository;
   private final ChatRepository chatRepository;
   private final ChatroomDocumentRepository chatroomDocumentRepository;
@@ -47,7 +50,10 @@ public class ChatroomServiceImpl implements ChatroomService {
       throw new CustomException(ErrorCode.CHATROOM_EXISTS);
     }
 
-    CategoryEntity categoryEntity = categoryRepository.findById(categoryId)
+    CategoryEntity categoryEntity = categoryRepository.findByIdWithLock(categoryId)
+        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+    CategoryDocument categoryDocument = categoryDocumentRepository.findById(categoryId)
         .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
     ChatroomEntity chatroomEntity = ChatroomEntity.builder()
@@ -75,6 +81,8 @@ public class ChatroomServiceImpl implements ChatroomService {
         .build();
 
     chatroomDocumentRepository.save(chatroomDocument);
+    categoryDocument.updateRooms(categoryDocument.getRooms() + 1);
+    categoryDocumentRepository.save(categoryDocument);
 
     // TODO: enter own chatroom
     enterChatRoom(userDetails, categoryId, saved.getId());
@@ -141,7 +149,6 @@ public class ChatroomServiceImpl implements ChatroomService {
         .map(e -> ChatroomDTO.builder()
             .id(e.getId())
             .title(e.getTitle())
-            .entranceMessage(e.getEntranceMessage())
             .createdBy(e.getCreatedBy())
             .present(e.getPresent())
             .capacity(e.getCapacity())
@@ -155,18 +162,21 @@ public class ChatroomServiceImpl implements ChatroomService {
   @Transactional
   public void enterChatRoom(UserDetails userDetails, Long categoryId, Long chatroomId) {
 
-    UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
-        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
     ChatroomEntity chatroomEntity = chatroomRepository.findByIdWithLock(chatroomId)
-        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-
-    ChatroomDocument chatroomDocument = chatroomDocumentRepository.findById(chatroomId)
         .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
     if (chatroomEntity.getPresent() == chatroomEntity.getCapacity()) {
       throw new CustomException(ErrorCode.CHATROOM_FULL);
     }
+
+    UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+    ChatroomDocument chatroomDocument = chatroomDocumentRepository.findById(chatroomId)
+        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+    CategoryDocument categoryDocument = categoryDocumentRepository.findById(categoryId)
+        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
     ChatroomUserEntity chatRoomUserEntity = ChatroomUserEntity.builder()
         .userEntity(userEntity)
@@ -174,9 +184,11 @@ public class ChatroomServiceImpl implements ChatroomService {
         .build();
 
     chatroomUserRepository.save(chatRoomUserEntity);
-    chatroomEntity.update(chatroomUserRepository.countByChatroomEntity(chatroomEntity));
+    chatroomEntity.update(chatroomEntity.getPresent() + 1);
     chatroomDocument.updatePresent(chatroomEntity.getPresent());
     chatroomDocumentRepository.save(chatroomDocument);
+    categoryDocument.updateParticipants(categoryDocument.getParticipants() + 1);
+    categoryDocumentRepository.save(categoryDocument);
   }
 
   @Override
