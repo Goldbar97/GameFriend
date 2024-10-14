@@ -20,6 +20,9 @@
 ![5](https://github.com/user-attachments/assets/87f8da2c-951c-4c04-9e9e-feed41071a5d)
 ![6](https://github.com/user-attachments/assets/9779821c-642d-453a-9bdb-9cb8f6deb4e5)
 
+## 이미지 업로드 기능
+![8](https://github.com/user-attachments/assets/a3ec1451-2541-4879-9bde-8dc7f65cb322)
+
 ## ERD
 ![7](https://github.com/user-attachments/assets/8f2b3b81-a441-4a4a-a0d2-f1110eba6059)
 
