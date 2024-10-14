@@ -13,6 +13,7 @@ import com.gamefriend.exception.CustomException;
 import com.gamefriend.exception.ErrorCode;
 import com.gamefriend.repository.UserRepository;
 import com.gamefriend.security.CustomUserDetails;
+import com.gamefriend.service.ImageService;
 import com.gamefriend.service.UserService;
 import com.gamefriend.type.UserRole;
 import java.util.List;
@@ -24,6 +25,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +35,7 @@ public class UserServiceImpl implements UserService {
   private final PasswordEncoder passwordEncoder;
   private final RedisComponent redisComponent;
   private final UserRepository userRepository;
+  private final ImageService imageService;
 
   @Override
   @Transactional
@@ -194,5 +197,25 @@ public class UserServiceImpl implements UserService {
 
     return new CustomUserDetails(userEntity.getUsername(),
         List.of(new SimpleGrantedAuthority(userEntity.getRole().name())));
+  }
+
+  @Override
+  @Transactional
+  public UserDTO uploadProfileImage(UserDetails userDetails, MultipartFile file) {
+
+    UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+    String imageUrl = imageService.uploadProfileImage(file);
+    userEntity.updateProfileImage(imageUrl);
+    UserDTO userDTO = UserDTO.builder()
+        .id(userEntity.getId())
+        .nickname(userEntity.getNickname())
+        .imageUrl(userEntity.getImageUrl())
+        .build();
+    redisComponent.saveUserDTO(userEntity.getUsername(), userDTO);
+
+    System.out.println(imageUrl);
+    return userDTO;
   }
 }

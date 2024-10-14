@@ -8,6 +8,7 @@ import com.gamefriend.dto.UserDTO;
 import com.gamefriend.dto.UsernameDTO;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService extends UserDetailsService {
 
@@ -26,4 +27,6 @@ public interface UserService extends UserDetailsService {
   void updateProfile(UserDetails userDetails, UserDTO userDTO);
 
   void verifyPassword(UserDetails userDetails, PasswordDTO passwordDTO);
+
+  UserDTO uploadProfileImage(UserDetails userDetails, MultipartFile file);
 }

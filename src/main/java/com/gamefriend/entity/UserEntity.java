@@ -42,4 +42,9 @@ public class UserEntity extends BaseEntity {
     this.nickname = userDTO.getNickname();
     this.imageUrl = userDTO.getImageUrl();
   }
+
+  public void updateProfileImage(String imageUrl) {
+
+    this.imageUrl = imageUrl;
+  }
 }

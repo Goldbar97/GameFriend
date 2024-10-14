@@ -12,6 +12,7 @@ public enum ErrorCode {
   CHATROOM_EXISTS(409, "Your chatroom already exists"),
   CHATROOM_FULL(400, "The chatroom is full"),
   EXPIRED_TOKEN(401, "Token is expired"),
+  FILE_TOO_BIG(400, "The file is too big"),
   INTERNAL_SERVER_ERROR(500, "Internal server error"),
   NICKNAME_EXISTS(409, "The nickname already exists"),
   NOT_FOUND(404, "The resource doesn't exist"),
@@ -21,6 +22,7 @@ public enum ErrorCode {
   USER_NOT_FOUND(404, "User doesn't exist"),
   USING_SAME_PASSWORD(409, "The password is already in use"),
   WRONG_CHATROOM_USER(404, "The user doesn't belong to the chatroom"),
+  WRONG_FILE_TYPE(400, "Wrong file type"),
   WRONG_PASSWORD(400, "Wrong password");
 
   private final int statusCode;
