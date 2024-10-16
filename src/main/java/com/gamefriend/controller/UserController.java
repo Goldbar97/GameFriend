@@ -1,5 +1,7 @@
 package com.gamefriend.controller;
 
+import com.gamefriend.dto.ImageUrlDTO;
+import com.gamefriend.dto.NicknameDTO;
 import com.gamefriend.dto.PasswordDTO;
 import com.gamefriend.dto.SignInDTO;
 import com.gamefriend.dto.SignInSuccessDTO;
@@ -16,12 +18,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -80,14 +82,6 @@ public class UserController {
     return ResponseEntity.ok(ApiResponse.ok());
   }
 
-  @PutMapping("/api/users/profile")
-  public ResponseEntity<ApiResponse> updateProfile(@AuthenticationPrincipal UserDetails userDetails,
-      @RequestBody @Validated UserDTO userDTO) {
-
-    userService.updateProfile(userDetails, userDTO);
-    return ResponseEntity.ok(ApiResponse.ok());
-  }
-
   @PutMapping("/api/users/password")
   public ResponseEntity<ApiResponse> updatePassword(
       @AuthenticationPrincipal UserDetails userDetails,
@@ -99,9 +93,25 @@ public class UserController {
 
   @PostMapping("/api/users/profile-image")
   public ResponseEntity<ApiResponseBody<UserDTO>> uploadProfileImage(
-      @AuthenticationPrincipal UserDetails userDetails,@RequestParam("file") MultipartFile file) {
+      @AuthenticationPrincipal UserDetails userDetails, @RequestParam("file") MultipartFile file) {
 
     UserDTO userDTO = userService.uploadProfileImage(userDetails, file);
     return ResponseEntity.ok(ApiResponseBody.okBody(userDTO));
+  }
+
+  @DeleteMapping("/api/users/profile-image")
+  public ResponseEntity<ApiResponse> deleteProfileImage(
+      @AuthenticationPrincipal UserDetails userDetails, @RequestBody ImageUrlDTO imageUrlDTO) {
+
+    userService.deleteProfileImage(userDetails, imageUrlDTO);
+    return ResponseEntity.ok(ApiResponse.ok());
+  }
+
+  @PutMapping("/api/users/nickname")
+  public ResponseEntity<ApiResponseBody<NicknameDTO>> updateNickname(
+      @AuthenticationPrincipal UserDetails userDetails, @RequestBody NicknameDTO nicknameDTO) {
+
+    NicknameDTO response = userService.updateNickname(userDetails, nicknameDTO);
+    return ResponseEntity.ok(ApiResponseBody.okBody(response));
   }
 }

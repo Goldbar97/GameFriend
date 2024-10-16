@@ -1,5 +1,7 @@
 package com.gamefriend.service;
 
+import com.gamefriend.dto.ImageUrlDTO;
+import com.gamefriend.dto.NicknameDTO;
 import com.gamefriend.dto.PasswordDTO;
 import com.gamefriend.dto.SignInDTO;
 import com.gamefriend.dto.SignInSuccessDTO;
@@ -24,9 +26,11 @@ public interface UserService extends UserDetailsService {
 
   void updatePassword(UserDetails userDetails, PasswordDTO passwordDTO);
 
-  void updateProfile(UserDetails userDetails, UserDTO userDTO);
-
   void verifyPassword(UserDetails userDetails, PasswordDTO passwordDTO);
 
   UserDTO uploadProfileImage(UserDetails userDetails, MultipartFile file);
+
+  void deleteProfileImage(UserDetails userDetails, ImageUrlDTO imageUrlDTO);
+
+  NicknameDTO updateNickname(UserDetails userDetails, NicknameDTO nicknameDTO);
 }

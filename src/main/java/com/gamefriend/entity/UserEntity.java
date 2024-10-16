@@ -37,14 +37,22 @@ public class UserEntity extends BaseEntity {
     this.password = password;
   }
 
-  public void update(UserDTO userDTO) {
-
-    this.nickname = userDTO.getNickname();
-    this.imageUrl = userDTO.getImageUrl();
-  }
-
   public void updateProfileImage(String imageUrl) {
 
     this.imageUrl = imageUrl;
+  }
+
+  public void updateNickname(String nickname) {
+
+    this.nickname = nickname;
+  }
+
+  public UserDTO toDTO() {
+
+    return UserDTO.builder()
+        .id(id)
+        .nickname(nickname)
+        .imageUrl(imageUrl)
+        .build();
   }
 }

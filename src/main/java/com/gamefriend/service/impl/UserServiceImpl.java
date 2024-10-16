@@ -2,6 +2,8 @@ package com.gamefriend.service.impl;
 
 import com.gamefriend.component.JwtProvider;
 import com.gamefriend.component.RedisComponent;
+import com.gamefriend.dto.ImageUrlDTO;
+import com.gamefriend.dto.NicknameDTO;
 import com.gamefriend.dto.PasswordDTO;
 import com.gamefriend.dto.SignInDTO;
 import com.gamefriend.dto.SignInSuccessDTO;
@@ -154,21 +156,6 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional
-  public void updateProfile(UserDetails userDetails, UserDTO userDTO) {
-
-    UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
-        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-    userEntity.update(userDTO);
-    redisComponent.saveUserDTO(userEntity.getUsername(), UserDTO.builder()
-        .id(userEntity.getId())
-        .nickname(userEntity.getNickname())
-        .imageUrl(userEntity.getImageUrl())
-        .build());
-  }
-
-  @Override
-  @Transactional
   public void verifyPassword(UserDetails userDetails, PasswordDTO passwordDTO) {
 
     UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
@@ -208,14 +195,34 @@ public class UserServiceImpl implements UserService {
 
     String imageUrl = imageService.uploadProfileImage(file);
     userEntity.updateProfileImage(imageUrl);
-    UserDTO userDTO = UserDTO.builder()
-        .id(userEntity.getId())
-        .nickname(userEntity.getNickname())
-        .imageUrl(userEntity.getImageUrl())
-        .build();
+    UserDTO userDTO = userEntity.toDTO();
     redisComponent.saveUserDTO(userEntity.getUsername(), userDTO);
 
-    System.out.println(imageUrl);
     return userDTO;
+  }
+
+  @Override
+  @Transactional
+  public void deleteProfileImage(UserDetails userDetails, ImageUrlDTO imageUrlDTO) {
+
+    UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+    imageService.deleteProfileImage(imageUrlDTO.getImageUrl());
+    userEntity.updateProfileImage("src/default-profile-image.png");
+    redisComponent.saveUserDTO(userEntity.getUsername(), userEntity.toDTO());
+  }
+
+  @Override
+  @Transactional
+  public NicknameDTO updateNickname(UserDetails userDetails, NicknameDTO nicknameDTO) {
+
+    UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+    userEntity.updateNickname(nicknameDTO.getNickname());
+    redisComponent.saveUserDTO(userEntity.getUsername(), userEntity.toDTO());
+
+    return new NicknameDTO(userEntity.getNickname());
   }
 }

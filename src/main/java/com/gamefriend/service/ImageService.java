@@ -5,4 +5,6 @@ import org.springframework.web.multipart.MultipartFile;
 public interface ImageService {
 
   String uploadProfileImage(MultipartFile file);
+
+  void deleteProfileImage(String url);
 }
