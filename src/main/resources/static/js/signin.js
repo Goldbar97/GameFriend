@@ -38,12 +38,14 @@ function signIn(event) {
   .then(data => {
     const responseBody = data.responseBody;
     const userDTO = responseBody.userDTO;
+    const nickname = userDTO.nickname;
     const imageUrl = userDTO.imageUrl;
     const token = responseBody.token;
     const expirationTime = Date.now() + 3600000;
 
     sessionStorage.setItem('token', token);
     sessionStorage.setItem('expirationTime', expirationTime);
+    sessionStorage.setItem('nickname', nickname);
     sessionStorage.setItem('imageUrl', imageUrl);
 
     window.location.href = 'index.html';

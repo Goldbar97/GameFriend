@@ -36,6 +36,15 @@
           <input class="form-control" type="file" id="imageUpload" accept="image/*">
         </div>
         <button type="submit" class="btn btn-primary">업로드</button>
+        <button type="button" class="btn btn-secondary" onclick="resetProfileImage()">초기화</button>
+      </form>
+
+      <form id="nicknameForm" class="mt-4">
+        <div class="mb-3">
+          <label for="nicknameInput" class="form-label">닉네임 변경</label>
+          <input type="text" class="form-control" id="nicknameInput" placeholder="새 닉네임을 입력하세요">
+        </div>
+        <button type="button" class="btn btn-primary" onclick="updateNickname()">변경</button>
       </form>
     </div>
   </div>

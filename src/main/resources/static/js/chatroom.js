@@ -47,15 +47,18 @@ function wsConnect() {
             `;
                 chatBox.appendChild(messageElement);
                 chatBox.scrollTop = chatBox.scrollHeight; // 스크롤 하단으로 이동
+
               } else if (messageBody.type === 'user') {
                 const responseBody = messageBody.responseBody;
                 const id = responseBody.id;
                 const nickname = responseBody.nickname;
                 const imageUrl = responseBody.imageUrl;
                 addParticipantToList(id, nickname, imageUrl);
+
               } else if (messageBody.type === 'delete') {
                 alert('방장이 나갔습니다. 방을 나갑니다.');
                 window.location.href = 'index.html';
+
               } else if (messageBody.type === 'leave') {
                 const responseBody = messageBody.responseBody;
                 const id = responseBody.id;
