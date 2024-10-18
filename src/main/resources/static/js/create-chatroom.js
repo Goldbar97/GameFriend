@@ -19,7 +19,7 @@ function submitChatroom() {
   }
 
   // 채팅방 생성 API 요청 보내기
-  fetch(`http://localhost:8080/api/categories/${categoryId}/chatrooms`, {
+  fetch(`http://141.164.45.30:8080/api/categories/${categoryId}/chatrooms`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

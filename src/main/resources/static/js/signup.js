@@ -10,7 +10,7 @@ function checkDupe() {
     return;
   }
 
-  fetch('http://localhost:8080/api/users/check-duplication', {
+  fetch('http://141.164.45.30:8080/api/users/check-duplication', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -45,7 +45,7 @@ function signUp() {
     return;
   }
 
-  fetch('http://localhost:8080/api/users/signup', {
+  fetch('http://141.164.45.30:8080/api/users/signup', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

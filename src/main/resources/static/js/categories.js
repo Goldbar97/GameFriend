@@ -24,7 +24,7 @@ function renderCategoryList(categories) {
 
 // 전체 카테고리 가져오기
 function fetchCategories() {
-  fetch('http://localhost:8080/api/categories', {
+  fetch('http://141.164.45.30:8080/api/categories', {
     method: 'GET'
   })
   .then(response => response.json())
@@ -40,7 +40,7 @@ function searchCategory() {
   const searchTerm = document.getElementById('categorySearch').value;
 
   // 서버로 검색 요청
-  fetch(`http://localhost:8080/api/categories/search?query=${encodeURIComponent(
+  fetch(`http://141.164.45.30:8080/api/categories/search?query=${encodeURIComponent(
       searchTerm)}`)
   .then(response => response.json())
   .then(data => {

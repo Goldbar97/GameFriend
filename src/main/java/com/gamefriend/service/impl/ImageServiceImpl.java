@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Service
@@ -45,7 +46,7 @@ public class ImageServiceImpl implements ImageService {
       PutObjectRequest request = PutObjectRequest.builder()
           .bucket(bucketName)
           .key(fileName)
-          .acl("public-read")
+          .acl(ObjectCannedACL.PUBLIC_READ)
           .contentType(file.getContentType())
           .build();
 

@@ -1,6 +1,6 @@
 function fetchCategoryAndChatrooms(categoryId) {
   // 카테고리 정보와 채팅방 목록을 가져오기
-  fetch(`http://localhost:8080/api/categories/${categoryId}/chatrooms`)
+  fetch(`http://141.164.45.30:8080/api/categories/${categoryId}/chatrooms`)
   .then(response => response.json())
   .then(data => {
     const chatrooms = data.responseBody; // 채팅방 리스트

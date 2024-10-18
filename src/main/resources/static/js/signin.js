@@ -9,7 +9,7 @@ function signIn(event) {
     return;
   }
 
-  fetch('http://localhost:8080/api/users/signin', {
+  fetch('http://141.164.45.30:8080/api/users/signin', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

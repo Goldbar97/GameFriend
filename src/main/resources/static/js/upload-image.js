@@ -119,21 +119,22 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(response => {
           if (response.ok) {
-            alert('이미지가 성공적으로 업로드되었습니다.');
+            return response.json();
           } else {
             alert('이미지 업로드에 실패했습니다.');
+            throw new Error('Upload failed');
           }
-          return response.json();
         })
         .then(data => {
           const imageUrl = data.responseBody.imageUrl;
           sessionStorage.setItem('imageUrl', imageUrl);
+          alert('이미지가 성공적으로 업로드 되었습니다.');
+          location.reload();
         })
         .catch(error => {
           console.error('에러 발생:', error);
           alert('업로드 중 문제가 발생했습니다.');
         });
-        location.reload();
       }
   );
 });
